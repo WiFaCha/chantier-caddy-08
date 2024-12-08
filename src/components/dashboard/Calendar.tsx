@@ -1,10 +1,9 @@
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, Trash } from "lucide-react";
-import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import { DragDropContext } from "react-beautiful-dnd";
 import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { CalendarHeader } from "./CalendarHeader";
+import { CalendarDay } from "./CalendarDay";
 
 interface Project {
   id: string;
@@ -29,7 +28,6 @@ export function Calendar() {
   const { data: projects = [] } = useQuery<Project[]>({
     queryKey: ['projects'],
     queryFn: async () => {
-      // Simulated API call - replace with actual API call
       return new Promise((resolve) => {
         const storedProjects = localStorage.getItem('projects');
         resolve(storedProjects ? JSON.parse(storedProjects) : []);
@@ -100,105 +98,64 @@ export function Calendar() {
     }));
   };
 
-  const days = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+  // Get the number of days in the current month
+  const daysInMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth() + 1,
+    0
+  ).getDate();
+
+  // Get the first day of the month (0 = Sunday, 1 = Monday, etc.)
+  const firstDayOfMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    1
+  ).getDay();
+
+  // Adjust for Monday as first day of week (0 = Monday, 6 = Sunday)
+  const adjustedFirstDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+
+  // Create array of day numbers for the current month
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+  // Add empty days at the start to align with correct day of week
+  const emptyDays = Array(adjustedFirstDay).fill(null);
+  const allDays = [...emptyDays, ...days];
 
   return (
     <Card className="col-span-4">
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle>Calendrier</CardTitle>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="icon" onClick={handlePrevMonth}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <div className="font-medium">
-            {currentDate.toLocaleString("fr-FR", { month: "long", year: "numeric" })}
-          </div>
-          <Button variant="outline" size="icon" onClick={handleNextMonth}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
+        <CalendarHeader
+          currentDate={currentDate}
+          onPrevMonth={handlePrevMonth}
+          onNextMonth={handleNextMonth}
+        />
       </CardHeader>
       <CardContent>
         <DragDropContext onDragEnd={handleDragEnd}>
           <div className="grid grid-cols-7 gap-4">
-            {days.map((day) => (
+            {["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"].map((day) => (
               <div key={day} className="text-center font-medium">
                 {day}
               </div>
             ))}
-            {Array.from({ length: 7 }).map((_, i) => (
-              <Droppable key={i} droppableId={String(i + 1)}>
-                {(provided) => (
-                  <Card 
-                    className="p-2"
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                  >
-                    <div className="text-center">{i + 1}</div>
-                    <div className="mt-2 space-y-1">
-                      {getProjectsForDay(i + 1).map((project, index) => (
-                        <Draggable
-                          key={project.scheduleId}
-                          draggableId={project.scheduleId}
-                          index={index}
-                        >
-                          {(provided) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              className={`flex items-center justify-between rounded p-1 text-sm text-white ${
-                                project.color === "violet"
-                                  ? "bg-violet-500"
-                                  : project.color === "blue"
-                                  ? "bg-blue-500"
-                                  : project.color === "green"
-                                  ? "bg-green-500"
-                                  : "bg-red-500"
-                              }`}
-                            >
-                              <span>{project.title}</span>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-4 w-4 text-white hover:text-white/80"
-                                onClick={() => handleDeleteProject(project.scheduleId)}
-                              >
-                                <Trash className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button variant="ghost" className="w-full justify-start text-left text-sm">
-                            + Ajouter
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Ajouter un chantier</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-2">
-                            {projects.map((project) => (
-                              <Button
-                                key={project.id}
-                                variant="ghost"
-                                className="w-full justify-start"
-                                onClick={() => handleAddProject(i + 1, project)}
-                              >
-                                {project.title}
-                              </Button>
-                            ))}
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-                  </Card>
+            {allDays.map((day, index) => (
+              <div key={index}>
+                {day !== null ? (
+                  <CalendarDay
+                    day={day}
+                    month={currentDate.getMonth()}
+                    year={currentDate.getFullYear()}
+                    projects={getProjectsForDay(day)}
+                    catalogProjects={projects}
+                    onAddProject={handleAddProject}
+                    onDeleteProject={handleDeleteProject}
+                  />
+                ) : (
+                  <div className="h-full" /> // Empty cell for alignment
                 )}
-              </Droppable>
+              </div>
             ))}
           </div>
         </DragDropContext>
