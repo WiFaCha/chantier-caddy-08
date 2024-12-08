@@ -24,14 +24,12 @@ export function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [scheduledProjects, setScheduledProjects] = useState<ScheduledProject[]>([]);
 
-  // Fetch projects from the catalog
+  // Fetch projects from the catalog using localStorage
   const { data: projects = [] } = useQuery<Project[]>({
     queryKey: ['projects'],
     queryFn: async () => {
-      return new Promise((resolve) => {
-        const storedProjects = localStorage.getItem('projects');
-        resolve(storedProjects ? JSON.parse(storedProjects) : []);
-      });
+      const storedProjects = localStorage.getItem('projects');
+      return storedProjects ? JSON.parse(storedProjects) : [];
     },
   });
 
