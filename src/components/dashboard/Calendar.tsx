@@ -73,6 +73,22 @@ export function Calendar() {
     setCurrentDate(newDate);
   };
 
+  // Add the missing handleAddProject function
+  const handleAddProject = (day: number, project: Project) => {
+    const scheduleDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    const newScheduledProject: ScheduledProject = {
+      ...project,
+      scheduleId: `${project.id}-${Date.now()}`,
+      date: scheduleDate
+    };
+    setScheduledProjects([...scheduledProjects, newScheduledProject]);
+  };
+
+  // Add the missing handleDeleteProject function
+  const handleDeleteProject = (scheduleId: string) => {
+    setScheduledProjects(scheduledProjects.filter(project => project.scheduleId !== scheduleId));
+  };
+
   // Get the days to display based on view mode
   const getDaysToDisplay = () => {
     const result = [];
