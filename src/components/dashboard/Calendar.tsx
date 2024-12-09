@@ -151,14 +151,14 @@ export function Calendar() {
       </CardHeader>
       <CardContent className={`${isMobile ? 'px-1' : 'px-6'}`}>
         <DragDropContext onDragEnd={handleDragEnd}>
-          <div className={`grid grid-cols-7 gap-1 md:gap-4 ${isMobile ? 'min-w-0' : 'min-w-[800px]'}`}>
+          <div className="grid grid-cols-7 gap-1 md:gap-4">
             {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((day) => (
-              <div key={day} className="text-center font-medium text-xs md:text-base">
-                {day}
+              <div key={day} className="text-center font-medium text-xs md:text-base p-1">
+                {isMobile ? day.charAt(0) : day}
               </div>
             ))}
             {days.map((date, index) => (
-              <div key={index} className="w-full">
+              <div key={index} className="w-full aspect-square">
                 {date !== null ? (
                   <CalendarDay
                     day={date.getDate()}

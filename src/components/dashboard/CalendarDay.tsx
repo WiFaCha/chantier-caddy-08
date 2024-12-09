@@ -33,7 +33,6 @@ export function CalendarDay({
   const isMobile = useIsMobile();
   const date = new Date(year, month, day);
   const isToday = new Date().toDateString() === date.toDateString();
-  const dayOfWeek = date.toLocaleString('fr-FR', { weekday: 'short' });
 
   const handleAddProject = (project: Project) => {
     onAddProject(day, project);
@@ -44,15 +43,14 @@ export function CalendarDay({
     <Droppable droppableId={String(day)}>
       {(provided) => (
         <Card 
-          className={`p-1 md:p-2 min-h-[80px] md:min-h-[120px] ${isToday ? 'border-primary' : ''}`}
+          className={`h-full w-full p-0.5 md:p-2 ${isToday ? 'border-primary border-2' : ''}`}
           ref={provided.innerRef}
           {...provided.droppableProps}
         >
-          <div className="text-center">
-            <div className="text-xs md:text-sm text-gray-500">{isMobile ? '' : dayOfWeek}</div>
+          <div className="text-center mb-0.5">
             <div className="text-xs md:text-base font-medium">{day}</div>
           </div>
-          <div className="mt-1 md:mt-2 space-y-1">
+          <div className="space-y-0.5 max-h-[calc(100%-20px)] overflow-y-auto">
             {projects.map((project, index) => (
               <Draggable
                 key={project.scheduleId}
@@ -64,7 +62,7 @@ export function CalendarDay({
                     ref={provided.innerRef}
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
-                    className={`flex items-center justify-between rounded p-0.5 md:p-1 text-xs md:text-sm text-white ${
+                    className={`flex items-center justify-between rounded p-0.5 text-[10px] md:text-sm text-white ${
                       project.color === "violet"
                         ? "bg-violet-500"
                         : project.color === "blue"
@@ -74,7 +72,7 @@ export function CalendarDay({
                         : "bg-red-500"
                     }`}
                   >
-                    <div className="flex items-center gap-1 md:gap-2 flex-1 min-w-0">
+                    <div className="flex items-center gap-0.5 flex-1 min-w-0">
                       <Checkbox
                         checked={project.completed}
                         onCheckedChange={() => onToggleComplete(project.scheduleId)}
@@ -85,7 +83,7 @@ export function CalendarDay({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-3 w-3 md:h-4 md:w-4 text-white hover:text-white/80 shrink-0"
+                      className="h-3 w-3 md:h-4 md:w-4 text-white hover:text-white/80 shrink-0 p-0"
                       onClick={() => onDeleteProject(project.scheduleId)}
                     >
                       <Trash className="h-2 w-2 md:h-3 md:w-3" />
@@ -97,7 +95,10 @@ export function CalendarDay({
             {provided.placeholder}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="ghost" className="w-full justify-start text-left text-xs md:text-sm">
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start text-left text-[10px] md:text-sm p-0.5"
+                >
                   + Ajouter
                 </Button>
               </DialogTrigger>
