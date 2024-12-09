@@ -23,15 +23,24 @@ export function ProjectCard({ id, title, address, price, type, details, color, o
     red: "border-red-500",
   }[color];
 
+  const handleAddressClick = () => {
+    if (address) {
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`, '_blank');
+    }
+  };
+
   return (
     <Card className={`relative overflow-hidden border-l-4 ${borderColor}`}>
       <CardHeader className="grid grid-cols-[1fr_110px] items-start gap-4 space-y-0">
         <div className="space-y-1">
           <CardTitle>{title}</CardTitle>
-          <div className="flex items-center text-sm text-muted-foreground">
+          <button 
+            onClick={handleAddressClick}
+            className="flex items-center text-sm text-primary hover:text-primary-dark transition-colors"
+          >
             <MapPin className="mr-1 h-4 w-4" />
-            {address}
-          </div>
+            {address || "Aucune adresse"}
+          </button>
         </div>
         <div className="flex items-center space-x-1">
           <ProjectDialog

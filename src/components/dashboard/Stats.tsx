@@ -1,45 +1,70 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, CheckCircle, Clock } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+
+interface Project {
+  id: string;
+  title: string;
+  address: string;
+  price: number;
+  type: "Mensuel" | "Ponctuel";
+  details?: string;
+  color: "violet" | "blue" | "green" | "red";
+  scheduleId?: string;
+  date?: Date;
+}
 
 export function Stats() {
+  const { data: scheduledProjects = [] } = useQuery({
+    queryKey: ['scheduledProjects'],
+    queryFn: async () => {
+      const stored = localStorage.getItem('scheduledProjects');
+      return stored ? JSON.parse(stored).map((p: any) => ({ ...p, date: new Date(p.date) })) : [];
+    },
+  });
+
+  const todayProjects = scheduledProjects.filter((project: Project) => {
+    if (!project.date) return false;
+    const today = new Date();
+    const projectDate = new Date(project.date);
+    return (
+      projectDate.getDate() === today.getDate() &&
+      projectDate.getMonth() === today.getMonth() &&
+      projectDate.getFullYear() === today.getFullYear()
+    );
+  });
+
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Chantiers aujourd'hui</CardTitle>
-          <Calendar className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">0</div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Tâches terminées</CardTitle>
-          <CheckCircle className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">0</div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Tâches en attente</CardTitle>
-          <Clock className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">1</div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Revenu total</CardTitle>
-          <span className="text-muted-foreground">€</span>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">60,40 €</div>
-        </CardContent>
-      </Card>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Chantiers du jour</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {todayProjects.length === 0 ? (
+          <p className="text-muted-foreground">Aucun chantier prévu aujourd'hui</p>
+        ) : (
+          <div className="space-y-4">
+            {todayProjects.map((project: Project) => (
+              <div
+                key={project.scheduleId}
+                className={`rounded p-3 ${
+                  project.color === "violet"
+                    ? "bg-violet-100 text-violet-900"
+                    : project.color === "blue"
+                    ? "bg-blue-100 text-blue-900"
+                    : project.color === "green"
+                    ? "bg-green-100 text-green-900"
+                    : "bg-red-100 text-red-900"
+                }`}
+              >
+                <div className="font-medium">{project.title}</div>
+                {project.address && (
+                  <div className="text-sm">{project.address}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

@@ -22,9 +22,11 @@ interface ProjectDialogProps {
   project?: ProjectFormValues;
   onSubmit: (data: ProjectFormValues) => void;
   trigger: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function ProjectDialog({ project, onSubmit, trigger }: ProjectDialogProps) {
+export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }: ProjectDialogProps) {
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: project || {
@@ -37,15 +39,20 @@ export function ProjectDialog({ project, onSubmit, trigger }: ProjectDialogProps
     },
   });
 
+  const handleSubmit = (data: ProjectFormValues) => {
+    onSubmit(data);
+    form.reset();
+  };
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{project ? "Modifier le chantier" : "Nouveau chantier"}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="title"
