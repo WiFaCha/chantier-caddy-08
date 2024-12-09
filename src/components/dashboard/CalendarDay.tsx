@@ -6,6 +6,7 @@ import { Trash } from "lucide-react";
 import { Draggable, Droppable } from "react-beautiful-dnd";
 import { useState } from "react";
 import { Project, ScheduledProject } from "@/types/calendar";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CalendarDayProps {
   day: number;
@@ -29,9 +30,10 @@ export function CalendarDay({
   onToggleComplete
 }: CalendarDayProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const isMobile = useIsMobile();
   const date = new Date(year, month, day);
   const isToday = new Date().toDateString() === date.toDateString();
-  const dayOfWeek = date.toLocaleString('fr-FR', { weekday: 'long' });
+  const dayOfWeek = date.toLocaleString('fr-FR', { weekday: 'short' });
 
   const handleAddProject = (project: Project) => {
     onAddProject(day, project);
@@ -42,15 +44,15 @@ export function CalendarDay({
     <Droppable droppableId={String(day)}>
       {(provided) => (
         <Card 
-          className={`p-2 min-h-[120px] ${isToday ? 'border-primary' : ''}`}
+          className={`p-1 md:p-2 min-h-[80px] md:min-h-[120px] ${isToday ? 'border-primary' : ''}`}
           ref={provided.innerRef}
           {...provided.droppableProps}
         >
           <div className="text-center">
-            <div className="text-sm text-gray-500">{dayOfWeek}</div>
-            <div className="font-medium">{day}</div>
+            <div className="text-xs md:text-sm text-gray-500">{isMobile ? '' : dayOfWeek}</div>
+            <div className="text-xs md:text-base font-medium">{day}</div>
           </div>
-          <div className="mt-2 space-y-1">
+          <div className="mt-1 md:mt-2 space-y-1">
             {projects.map((project, index) => (
               <Draggable
                 key={project.scheduleId}
@@ -62,7 +64,7 @@ export function CalendarDay({
                     ref={provided.innerRef}
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
-                    className={`flex items-center justify-between rounded p-1 text-sm text-white ${
+                    className={`flex items-center justify-between rounded p-0.5 md:p-1 text-xs md:text-sm text-white ${
                       project.color === "violet"
                         ? "bg-violet-500"
                         : project.color === "blue"
@@ -72,21 +74,21 @@ export function CalendarDay({
                         : "bg-red-500"
                     }`}
                   >
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <div className="flex items-center gap-1 md:gap-2 flex-1 min-w-0">
                       <Checkbox
                         checked={project.completed}
                         onCheckedChange={() => onToggleComplete(project.scheduleId)}
-                        className="bg-white/20 border-white/40 data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
+                        className="h-3 w-3 md:h-4 md:w-4 bg-white/20 border-white/40 data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
                       />
                       <span className="truncate">{project.title}</span>
                     </div>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-4 w-4 text-white hover:text-white/80 shrink-0"
+                      className="h-3 w-3 md:h-4 md:w-4 text-white hover:text-white/80 shrink-0"
                       onClick={() => onDeleteProject(project.scheduleId)}
                     >
-                      <Trash className="h-3 w-3" />
+                      <Trash className="h-2 w-2 md:h-3 md:w-3" />
                     </Button>
                   </div>
                 )}
@@ -95,7 +97,7 @@ export function CalendarDay({
             {provided.placeholder}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="ghost" className="w-full justify-start text-left text-sm">
+                <Button variant="ghost" className="w-full justify-start text-left text-xs md:text-sm">
                   + Ajouter
                 </Button>
               </DialogTrigger>

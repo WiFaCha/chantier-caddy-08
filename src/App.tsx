@@ -16,9 +16,11 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
     <div className="hidden w-64 border-r bg-white md:block">
       <Sidebar />
     </div>
-    <div className="flex-1">
+    <div className="flex-1 w-full overflow-x-hidden">
       <Navbar />
-      {children}
+      <div className="container mx-auto p-4">
+        {children}
+      </div>
     </div>
   </div>
 );

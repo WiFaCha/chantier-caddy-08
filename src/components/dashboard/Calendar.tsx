@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { CalendarDay } from "./CalendarDay";
 import { CalendarNavigation } from "./CalendarNavigation";
 import { Project, ScheduledProject } from "@/types/calendar";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -18,6 +19,8 @@ export function Calendar() {
       return storedProjects ? JSON.parse(storedProjects) : [];
     },
   });
+
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const storedSchedule = localStorage.getItem('scheduledProjects');
@@ -135,7 +138,7 @@ export function Calendar() {
   const days = getDaysToDisplay();
 
   return (
-    <Card className="col-span-4">
+    <Card className="col-span-4 w-full">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 flex-wrap gap-4">
         <CardTitle>Calendrier</CardTitle>
         <CalendarNavigation
@@ -146,16 +149,16 @@ export function Calendar() {
           onNextPeriod={handleNextPeriod}
         />
       </CardHeader>
-      <CardContent className="overflow-x-auto">
+      <CardContent className={`${isMobile ? 'px-1' : 'px-6'}`}>
         <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="grid grid-cols-7 gap-4 min-w-[800px]">
-            {["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"].map((day) => (
-              <div key={day} className="text-center font-medium">
+          <div className={`grid grid-cols-7 gap-1 md:gap-4 ${isMobile ? 'min-w-0' : 'min-w-[800px]'}`}>
+            {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((day) => (
+              <div key={day} className="text-center font-medium text-xs md:text-base">
                 {day}
               </div>
             ))}
             {days.map((date, index) => (
-              <div key={index}>
+              <div key={index} className="w-full">
                 {date !== null ? (
                   <CalendarDay
                     day={date.getDate()}
