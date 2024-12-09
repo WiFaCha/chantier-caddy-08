@@ -2,31 +2,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DragDropContext } from "react-beautiful-dnd";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { CalendarHeader } from "./CalendarHeader";
 import { CalendarDay } from "./CalendarDay";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-interface Project {
-  id: string;
-  title: string;
-  address: string;
-  price: number;
-  type: "Mensuel" | "Ponctuel";
-  details?: string;
-  color: "violet" | "blue" | "green" | "red";
-}
-
-interface ScheduledProject extends Project {
-  scheduleId: string;
-  date: Date;
-}
+import { CalendarNavigation } from "./CalendarNavigation";
+import { Project, ScheduledProject } from "@/types/calendar";
 
 export function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [scheduledProjects, setScheduledProjects] = useState<ScheduledProject[]>([]);
   const [viewMode, setViewMode] = useState<"month" | "week" | "twoWeeks">("month");
 
-  // Fetch projects from the catalog using localStorage
   const { data: projects = [] } = useQuery<Project[]>({
     queryKey: ['projects'],
     queryFn: async () => {
@@ -35,7 +19,6 @@ export function Calendar() {
     },
   });
 
-  // Load scheduled projects from localStorage
   useEffect(() => {
     const storedSchedule = localStorage.getItem('scheduledProjects');
     if (storedSchedule) {
@@ -46,7 +29,6 @@ export function Calendar() {
     }
   }, []);
 
-  // Save scheduled projects to localStorage
   useEffect(() => {
     localStorage.setItem('scheduledProjects', JSON.stringify(scheduledProjects));
   }, [scheduledProjects]);
@@ -73,51 +55,49 @@ export function Calendar() {
     setCurrentDate(newDate);
   };
 
-  // Add the missing handleAddProject function
   const handleAddProject = (day: number, project: Project) => {
     const scheduleDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
     const newScheduledProject: ScheduledProject = {
       ...project,
       scheduleId: `${project.id}-${Date.now()}`,
-      date: scheduleDate
+      date: scheduleDate,
+      completed: false
     };
     setScheduledProjects([...scheduledProjects, newScheduledProject]);
   };
 
-  // Add the missing handleDeleteProject function
   const handleDeleteProject = (scheduleId: string) => {
     setScheduledProjects(scheduledProjects.filter(project => project.scheduleId !== scheduleId));
   };
 
-  // Get the days to display based on view mode
+  const handleToggleComplete = (scheduleId: string) => {
+    setScheduledProjects(scheduledProjects.map(project => {
+      if (project.scheduleId === scheduleId) {
+        return { ...project, completed: !project.completed };
+      }
+      return project;
+    }));
+  };
+
   const getDaysToDisplay = () => {
     const result = [];
     let startDate = new Date(currentDate);
 
     if (viewMode === "month") {
-      // Reset to first day of month
       startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-      // Get the first day of the month (0 = Sunday, 1 = Monday, etc.)
       const firstDayOfMonth = startDate.getDay();
-      // Adjust for Monday as first day of week (0 = Monday, 6 = Sunday)
       const adjustedFirstDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
-      // Add empty days at the start
       for (let i = 0; i < adjustedFirstDay; i++) {
         result.push(null);
       }
-      // Add all days of the month
       const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
       for (let i = 1; i <= daysInMonth; i++) {
         result.push(new Date(currentDate.getFullYear(), currentDate.getMonth(), i));
       }
     } else {
-      // For week and two-week views
-      // Start from Monday of the current week
       const day = startDate.getDay();
       const diff = startDate.getDate() - day + (day === 0 ? -6 : 1);
       startDate = new Date(startDate.setDate(diff));
-
-      // Add days based on view mode
       const daysToShow = viewMode === "week" ? 7 : 14;
       for (let i = 0; i < daysToShow; i++) {
         const currentDay = new Date(startDate);
@@ -156,33 +136,19 @@ export function Calendar() {
 
   return (
     <Card className="col-span-4">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 flex-wrap gap-4">
         <CardTitle>Calendrier</CardTitle>
-        <div className="flex items-center gap-4">
-          <Select
-            value={viewMode}
-            onValueChange={(value: "month" | "week" | "twoWeeks") => setViewMode(value)}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Sélectionner la vue" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="month">Mois</SelectItem>
-              <SelectItem value="week">Semaine</SelectItem>
-              <SelectItem value="twoWeeks">Deux semaines</SelectItem>
-            </SelectContent>
-          </Select>
-          <CalendarHeader
-            currentDate={currentDate}
-            onPrevPeriod={handlePrevPeriod}
-            onNextPeriod={handleNextPeriod}
-            viewMode={viewMode}
-          />
-        </div>
+        <CalendarNavigation
+          currentDate={currentDate}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          onPrevPeriod={handlePrevPeriod}
+          onNextPeriod={handleNextPeriod}
+        />
       </CardHeader>
-      <CardContent>
+      <CardContent className="overflow-x-auto">
         <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="grid grid-cols-7 gap-4">
+          <div className="grid grid-cols-7 gap-4 min-w-[800px]">
             {["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"].map((day) => (
               <div key={day} className="text-center font-medium">
                 {day}
@@ -199,6 +165,7 @@ export function Calendar() {
                     catalogProjects={projects}
                     onAddProject={handleAddProject}
                     onDeleteProject={handleDeleteProject}
+                    onToggleComplete={handleToggleComplete}
                   />
                 ) : (
                   <div className="h-full" />

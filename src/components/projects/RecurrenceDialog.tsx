@@ -6,11 +6,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { CalendarIcon, RotateCw } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 const formSchema = z.object({
   weekdays: z.array(z.number()),
@@ -35,6 +36,7 @@ interface RecurrenceDialogProps {
 }
 
 export function RecurrenceDialog({ project, trigger }: RecurrenceDialogProps) {
+  const [open, setOpen] = useState(false);
   const form = useForm<RecurrenceFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -73,10 +75,11 @@ export function RecurrenceDialog({ project, trigger }: RecurrenceDialogProps) {
     localStorage.setItem('scheduledProjects', JSON.stringify(updatedProjects));
     
     form.reset();
+    setOpen(false);
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

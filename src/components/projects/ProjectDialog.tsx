@@ -42,6 +42,9 @@ export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }
   const handleSubmit = (data: ProjectFormValues) => {
     onSubmit(data);
     form.reset();
+    if (onOpenChange) {
+      onOpenChange(false);
+    }
   };
 
   return (
