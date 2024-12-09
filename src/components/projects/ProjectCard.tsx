@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Pencil, Trash } from "lucide-react";
+import { MapPin, Pencil, RotateCw, Trash } from "lucide-react";
 import { ProjectDialog } from "./ProjectDialog";
+import { RecurrenceDialog } from "./RecurrenceDialog";
 
 interface ProjectCardProps {
   id: string;
@@ -31,7 +32,7 @@ export function ProjectCard({ id, title, address, price, type, details, color, o
 
   return (
     <Card className={`relative overflow-hidden border-l-4 ${borderColor}`}>
-      <CardHeader className="grid grid-cols-[1fr_110px] items-start gap-4 space-y-0">
+      <CardHeader className="grid grid-cols-[1fr_160px] items-start gap-4 space-y-0">
         <div className="space-y-1">
           <CardTitle>{title}</CardTitle>
           <button 
@@ -43,6 +44,14 @@ export function ProjectCard({ id, title, address, price, type, details, color, o
           </button>
         </div>
         <div className="flex items-center space-x-1">
+          <RecurrenceDialog
+            project={{ id, title, address, price, type, details, color }}
+            trigger={
+              <Button variant="ghost" size="icon">
+                <RotateCw className="h-4 w-4" />
+              </Button>
+            }
+          />
           <ProjectDialog
             project={{ title, address, price, type, details, color }}
             onSubmit={onUpdate}
