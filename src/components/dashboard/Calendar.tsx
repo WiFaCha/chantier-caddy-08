@@ -88,10 +88,12 @@ export function Calendar() {
 
     if (viewMode === "month") {
       startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-      const firstDayOfMonth = startDate.getDay();
-      const adjustedFirstDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
-      for (let i = 0; i < adjustedFirstDay; i++) {
-        result.push(null);
+      if (!isMobile) {
+        const firstDayOfMonth = startDate.getDay();
+        const adjustedFirstDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+        for (let i = 0; i < adjustedFirstDay; i++) {
+          result.push(null);
+        }
       }
       const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
       for (let i = 1; i <= daysInMonth; i++) {
@@ -112,29 +114,6 @@ export function Calendar() {
     return result;
   };
 
-  const getProjectsForDay = (day: number) => {
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    return scheduledProjects.filter(
-      (project) => project.date.toDateString() === date.toDateString()
-    );
-  };
-
-  const handleDragEnd = (result: any) => {
-    if (!result.destination) return;
-
-    const sourceDay = parseInt(result.source.droppableId);
-    const destinationDay = parseInt(result.destination.droppableId);
-    const projectId = result.draggableId;
-
-    setScheduledProjects(scheduledProjects.map(project => {
-      if (project.scheduleId === projectId) {
-        const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), destinationDay);
-        return { ...project, date: newDate };
-      }
-      return project;
-    }));
-  };
-
   const days = getDaysToDisplay();
 
   return (
@@ -149,17 +128,12 @@ export function Calendar() {
           onNextPeriod={handleNextPeriod}
         />
       </CardHeader>
-      <CardContent className={`${isMobile ? 'px-1' : 'px-6'}`}>
+      <CardContent className={`${isMobile ? 'px-2' : 'px-6'}`}>
         <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="grid grid-cols-7 gap-1 md:gap-4">
-            {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((day) => (
-              <div key={day} className="text-center font-medium text-xs md:text-base p-1">
-                {isMobile ? day.charAt(0) : day}
-              </div>
-            ))}
-            {days.map((date, index) => (
-              <div key={index} className="w-full aspect-square">
-                {date !== null ? (
+          {isMobile ? (
+            <div className="space-y-2">
+              {days.filter(date => date !== null).map((date, index) => (
+                <div key={index} className="w-full">
                   <CalendarDay
                     day={date.getDate()}
                     month={date.getMonth()}
@@ -170,12 +144,36 @@ export function Calendar() {
                     onDeleteProject={handleDeleteProject}
                     onToggleComplete={handleToggleComplete}
                   />
-                ) : (
-                  <div className="h-full" />
-                )}
-              </div>
-            ))}
-          </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-7 gap-4">
+              {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((day) => (
+                <div key={day} className="text-center font-medium p-1">
+                  {day}
+                </div>
+              ))}
+              {days.map((date, index) => (
+                <div key={index} className="w-full min-h-[150px]">
+                  {date !== null ? (
+                    <CalendarDay
+                      day={date.getDate()}
+                      month={date.getMonth()}
+                      year={date.getFullYear()}
+                      projects={getProjectsForDay(date.getDate())}
+                      catalogProjects={projects}
+                      onAddProject={handleAddProject}
+                      onDeleteProject={handleDeleteProject}
+                      onToggleComplete={handleToggleComplete}
+                    />
+                  ) : (
+                    <div className="h-full" />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </DragDropContext>
       </CardContent>
     </Card>
