@@ -2,15 +2,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { CalendarDay } from "./CalendarDay";
 import { CalendarNavigation } from "./CalendarNavigation";
 import { Project, ScheduledProject } from "@/types/calendar";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { CalendarGrid } from "./CalendarGrid";
+import { getDaysToDisplay } from "@/utils/calendarUtils";
 
 export function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [scheduledProjects, setScheduledProjects] = useState<ScheduledProject[]>([]);
-  const [viewMode, setViewMode] = useState<"month" | "week" | "twoWeeks">("month");
+  const [viewMode, setViewMode] = useState<"month" | "week" | "twoWeeks">("week");
 
   const { data: projects = [] } = useQuery<Project[]>({
     queryKey: ['projects'],
@@ -91,17 +92,6 @@ export function Calendar() {
     }));
   };
 
-  const getProjectsForDay = (day: number) => {
-    return scheduledProjects.filter(project => {
-      const projectDate = new Date(project.date);
-      return (
-        projectDate.getDate() === day &&
-        projectDate.getMonth() === currentDate.getMonth() &&
-        projectDate.getFullYear() === currentDate.getFullYear()
-      );
-    });
-  };
-
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
 
@@ -125,39 +115,7 @@ export function Calendar() {
     }));
   };
 
-  const getDaysToDisplay = () => {
-    const result = [];
-    let startDate = new Date(currentDate);
-
-    if (viewMode === "month") {
-      startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-      if (!isMobile) {
-        const firstDayOfMonth = startDate.getDay();
-        const adjustedFirstDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
-        for (let i = 0; i < adjustedFirstDay; i++) {
-          result.push(null);
-        }
-      }
-      const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
-      for (let i = 1; i <= daysInMonth; i++) {
-        result.push(new Date(currentDate.getFullYear(), currentDate.getMonth(), i));
-      }
-    } else {
-      const day = startDate.getDay();
-      const diff = startDate.getDate() - day + (day === 0 ? -6 : 1);
-      startDate = new Date(startDate.setDate(diff));
-      const daysToShow = viewMode === "week" ? 7 : 14;
-      for (let i = 0; i < daysToShow; i++) {
-        const currentDay = new Date(startDate);
-        currentDay.setDate(startDate.getDate() + i);
-        result.push(currentDay);
-      }
-    }
-
-    return result;
-  };
-
-  const days = getDaysToDisplay();
+  const days = getDaysToDisplay(currentDate, viewMode, isMobile);
 
   return (
     <Card className="col-span-4 w-full">
@@ -173,52 +131,16 @@ export function Calendar() {
       </CardHeader>
       <CardContent className={`${isMobile ? 'px-2' : 'px-6'}`}>
         <DragDropContext onDragEnd={handleDragEnd}>
-          {isMobile ? (
-            <div className="space-y-2">
-              {days.filter(date => date !== null).map((date, index) => (
-                <div key={index} className="w-full">
-                  <CalendarDay
-                    day={date.getDate()}
-                    month={date.getMonth()}
-                    year={date.getFullYear()}
-                    projects={getProjectsForDay(date.getDate())}
-                    catalogProjects={projects}
-                    onAddProject={handleAddProject}
-                    onDeleteProject={handleDeleteProject}
-                    onToggleComplete={handleToggleComplete}
-                    onTimeChange={handleTimeChange}
-                  />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-7 gap-4">
-              {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((day) => (
-                <div key={day} className="text-center font-medium p-1">
-                  {day}
-                </div>
-              ))}
-              {days.map((date, index) => (
-                <div key={index} className="w-full min-h-[150px]">
-                  {date !== null ? (
-                    <CalendarDay
-                      day={date.getDate()}
-                      month={date.getMonth()}
-                      year={date.getFullYear()}
-                      projects={getProjectsForDay(date.getDate())}
-                      catalogProjects={projects}
-                      onAddProject={handleAddProject}
-                      onDeleteProject={handleDeleteProject}
-                      onToggleComplete={handleToggleComplete}
-                      onTimeChange={handleTimeChange}
-                    />
-                  ) : (
-                    <div className="h-full" />
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
+          <CalendarGrid
+            days={days}
+            projects={projects}
+            scheduledProjects={scheduledProjects}
+            onAddProject={handleAddProject}
+            onDeleteProject={handleDeleteProject}
+            onToggleComplete={handleToggleComplete}
+            onTimeChange={handleTimeChange}
+            isMobile={isMobile}
+          />
         </DragDropContext>
       </CardContent>
     </Card>
