@@ -82,6 +82,15 @@ export function Calendar() {
     }));
   };
 
+  const handleTimeChange = (scheduleId: string, time: string) => {
+    setScheduledProjects(scheduledProjects.map(project => {
+      if (project.scheduleId === scheduleId) {
+        return { ...project, time };
+      }
+      return project;
+    }));
+  };
+
   const getProjectsForDay = (day: number) => {
     return scheduledProjects.filter(project => {
       const projectDate = new Date(project.date);
@@ -177,6 +186,7 @@ export function Calendar() {
                     onAddProject={handleAddProject}
                     onDeleteProject={handleDeleteProject}
                     onToggleComplete={handleToggleComplete}
+                    onTimeChange={handleTimeChange}
                   />
                 </div>
               ))}
@@ -200,6 +210,7 @@ export function Calendar() {
                       onAddProject={handleAddProject}
                       onDeleteProject={handleDeleteProject}
                       onToggleComplete={handleToggleComplete}
+                      onTimeChange={handleTimeChange}
                     />
                   ) : (
                     <div className="h-full" />

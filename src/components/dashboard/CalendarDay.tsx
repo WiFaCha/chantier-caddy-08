@@ -9,6 +9,7 @@ import { Project, ScheduledProject } from "@/types/calendar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { TimeSelector } from "../calendar/TimeSelector";
 
 interface CalendarDayProps {
   day: number;
@@ -19,6 +20,7 @@ interface CalendarDayProps {
   onAddProject: (day: number, project: Project) => void;
   onDeleteProject: (scheduleId: string) => void;
   onToggleComplete: (scheduleId: string) => void;
+  onTimeChange: (scheduleId: string, time: string) => void;
 }
 
 export function CalendarDay({ 
@@ -29,7 +31,8 @@ export function CalendarDay({
   catalogProjects, 
   onAddProject, 
   onDeleteProject,
-  onToggleComplete
+  onToggleComplete,
+  onTimeChange
 }: CalendarDayProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const isMobile = useIsMobile();
@@ -84,16 +87,30 @@ export function CalendarDay({
                         onCheckedChange={() => onToggleComplete(project.scheduleId)}
                         className="h-4 w-4 bg-white/20 border-white/40 data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
                       />
-                      <span className="truncate">{project.title}</span>
+                      <span className="truncate">
+                        {project.title}
+                        {project.time && (
+                          <span className="ml-2 text-xs opacity-80">
+                            {project.time}
+                          </span>
+                        )}
+                      </span>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-white hover:text-white/80 shrink-0"
-                      onClick={() => onDeleteProject(project.scheduleId)}
-                    >
-                      <Trash className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <TimeSelector
+                        scheduleId={project.scheduleId}
+                        currentTime={project.time}
+                        onTimeChange={onTimeChange}
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-white hover:text-white/80 shrink-0"
+                        onClick={() => onDeleteProject(project.scheduleId)}
+                      >
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 )}
               </Draggable>

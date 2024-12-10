@@ -12,4 +12,5 @@ export interface ScheduledProject extends Project {
   scheduleId: string;
   date: Date;
   completed?: boolean;
+  time?: string;
 }
