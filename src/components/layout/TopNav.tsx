@@ -23,34 +23,34 @@ export function TopNav() {
               <NavLink
                 to="/"
                 className={({ isActive }) =>
-                  `flex items-center rounded-lg px-3 py-2 text-sm transition-all hover:bg-primary-light hover:text-white ${
+                  `flex items-center rounded-lg p-2 transition-all hover:bg-primary-light hover:text-white ${
                     isActive ? "bg-primary text-white" : "text-gray-500"
                   }`
                 }
+                title="Accueil"
               >
-                <LayoutDashboard className="mr-2 h-4 w-4" />
-                Accueil
+                <LayoutDashboard className="h-5 w-5" />
               </NavLink>
               <NavLink
                 to="/projects"
                 className={({ isActive }) =>
-                  `flex items-center rounded-lg px-3 py-2 text-sm transition-all hover:bg-primary-light hover:text-white ${
+                  `flex items-center rounded-lg p-2 transition-all hover:bg-primary-light hover:text-white ${
                     isActive ? "bg-primary text-white" : "text-gray-500"
                   }`
                 }
+                title="Chantiers"
               >
-                <Calendar className="mr-2 h-4 w-4" />
-                Chantiers
+                <Calendar className="h-5 w-5" />
               </NavLink>
             </div>
           </div>
           <Button
             variant="ghost"
-            className="text-gray-500 hover:text-primary"
+            className="text-gray-500 hover:text-primary p-2"
             onClick={handleLogout}
+            title="Se déconnecter"
           >
-            <LogOut className="mr-2 h-4 w-4" />
-            Se déconnecter
+            <LogOut className="h-5 w-5" />
           </Button>
         </div>
       </div>

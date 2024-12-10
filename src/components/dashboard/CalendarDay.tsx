@@ -54,11 +54,7 @@ export function CalendarDay({
         >
           <div className="flex flex-col h-full">
             <div className={`${isMobile ? 'text-lg font-medium mb-4' : 'text-sm font-medium mb-3'}`}>
-              {isMobile ? (
-                format(date, "EEEE d MMMM", { locale: fr })
-              ) : (
-                <div className="text-base">{day}</div>
-              )}
+              {format(date, isMobile ? "EEEE d MMMM" : "EEEE d MMMM", { locale: fr })}
             </div>
             <div className="space-y-2 flex-1 overflow-y-auto">
               {projects.map((project, index) => (
