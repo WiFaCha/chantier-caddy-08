@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DragDropContext } from "react-beautiful-dnd";
+import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { CalendarDay } from "./CalendarDay";
@@ -77,6 +77,40 @@ export function Calendar() {
     setScheduledProjects(scheduledProjects.map(project => {
       if (project.scheduleId === scheduleId) {
         return { ...project, completed: !project.completed };
+      }
+      return project;
+    }));
+  };
+
+  const getProjectsForDay = (day: number) => {
+    return scheduledProjects.filter(project => {
+      const projectDate = new Date(project.date);
+      return (
+        projectDate.getDate() === day &&
+        projectDate.getMonth() === currentDate.getMonth() &&
+        projectDate.getFullYear() === currentDate.getFullYear()
+      );
+    });
+  };
+
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+
+    const { source, destination, draggableId } = result;
+    const sourceDay = parseInt(source.droppableId);
+    const destinationDay = parseInt(destination.droppableId);
+
+    if (sourceDay === destinationDay) return;
+
+    const projectToMove = scheduledProjects.find(p => p.scheduleId === draggableId);
+    if (!projectToMove) return;
+
+    const newDate = new Date(projectToMove.date);
+    newDate.setDate(destinationDay);
+
+    setScheduledProjects(scheduledProjects.map(project => {
+      if (project.scheduleId === draggableId) {
+        return { ...project, date: newDate };
       }
       return project;
     }));
