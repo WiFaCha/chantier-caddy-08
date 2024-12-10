@@ -23,48 +23,60 @@ export function CalendarGrid({
   onTimeChange,
   isMobile
 }: CalendarGridProps) {
-  return isMobile ? (
-    <div className="space-y-4">
-      {days.filter(date => date !== null).map((date, index) => (
-        <div key={index} className="w-full">
-          <CalendarDay
-            day={date!.getDate()}
-            month={date!.getMonth()}
-            year={date!.getFullYear()}
-            projects={getProjectsForDay(scheduledProjects, date!.getDate(), date!.getMonth(), date!.getFullYear())}
-            catalogProjects={projects}
-            onAddProject={onAddProject}
-            onDeleteProject={onDeleteProject}
-            onToggleComplete={onToggleComplete}
-            onTimeChange={onTimeChange}
-          />
-        </div>
-      ))}
-    </div>
-  ) : (
-    <div className="grid grid-cols-7 gap-6">
-      {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((day) => (
-        <div key={day} className="text-center font-medium p-2 text-sm">
-          {day}
-        </div>
-      ))}
-      {days.map((date, index) => (
-        <div key={index} className="min-h-[200px]">
-          {date !== null ? (
+  if (isMobile) {
+    return (
+      <div className="space-y-4">
+        {days.filter(date => date !== null).map((date, index) => (
+          <div key={index} className="w-full">
             <CalendarDay
-              day={date.getDate()}
-              month={date.getMonth()}
-              year={date.getFullYear()}
-              projects={getProjectsForDay(scheduledProjects, date.getDate(), date.getMonth(), date.getFullYear())}
+              day={date!.getDate()}
+              month={date!.getMonth()}
+              year={date!.getFullYear()}
+              projects={getProjectsForDay(scheduledProjects, date!.getDate(), date!.getMonth(), date!.getFullYear())}
               catalogProjects={projects}
               onAddProject={onAddProject}
               onDeleteProject={onDeleteProject}
               onToggleComplete={onToggleComplete}
               onTimeChange={onTimeChange}
             />
-          ) : (
-            <div className="h-full" />
-          )}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // Grouper les jours par groupes de 4 pour l'affichage desktop
+  const groupedDays = days.reduce((acc: (Date | null)[][], curr, i) => {
+    if (i % 4 === 0) {
+      acc.push([]);
+    }
+    acc[acc.length - 1].push(curr);
+    return acc;
+  }, []);
+
+  return (
+    <div className="space-y-6">
+      {groupedDays.map((group, groupIndex) => (
+        <div key={groupIndex} className="grid grid-cols-4 gap-6">
+          {group.map((date, index) => (
+            <div key={index} className="min-h-[250px]">
+              {date !== null ? (
+                <CalendarDay
+                  day={date.getDate()}
+                  month={date.getMonth()}
+                  year={date.getFullYear()}
+                  projects={getProjectsForDay(scheduledProjects, date.getDate(), date.getMonth(), date.getFullYear())}
+                  catalogProjects={projects}
+                  onAddProject={onAddProject}
+                  onDeleteProject={onDeleteProject}
+                  onToggleComplete={onToggleComplete}
+                  onTimeChange={onTimeChange}
+                />
+              ) : (
+                <div className="h-full" />
+              )}
+            </div>
+          ))}
         </div>
       ))}
     </div>
