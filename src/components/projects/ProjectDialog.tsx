@@ -11,7 +11,6 @@ const formSchema = z.object({
   title: z.string().min(1, "Le nom est requis"),
   address: z.string(),
   price: z.number().min(0, "Le prix doit être positif"),
-  type: z.enum(["Mensuel", "Ponctuel"]),
   details: z.string().optional(),
   color: z.enum(["violet", "blue", "green", "red"]),
 });
@@ -33,7 +32,6 @@ export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }
       title: "",
       address: "",
       price: 0,
-      type: "Mensuel",
       details: "",
       color: "violet",
     },
@@ -50,12 +48,12 @@ export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{project ? "Modifier le chantier" : "Nouveau chantier"}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3">
             <FormField
               control={form.control}
               name="title"
@@ -94,24 +92,6 @@ export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }
             />
             <FormField
               control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Type</FormLabel>
-                  <FormControl>
-                    <select
-                      {...field}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    >
-                      <option value="Mensuel">Mensuel</option>
-                      <option value="Ponctuel">Ponctuel</option>
-                    </select>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
               name="color"
               render={({ field }) => (
                 <FormItem>
@@ -138,7 +118,7 @@ export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }
                 <FormItem>
                   <FormLabel>Observations</FormLabel>
                   <FormControl>
-                    <Textarea {...field} />
+                    <Textarea {...field} className="h-20" />
                   </FormControl>
                 </FormItem>
               )}

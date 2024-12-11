@@ -48,7 +48,7 @@ export function RecurrenceDialog({ project, trigger }: RecurrenceDialogProps) {
   const handleSubmit = (data: RecurrenceFormValues) => {
     const startDate = new Date();
     const endDate = new Date(data.endDate);
-    endDate.setHours(23, 59, 59, 999); // Set to end of day
+    endDate.setHours(23, 59, 59, 999);
     const weekdays = data.weekdays;
     
     const scheduledProjects = [];
@@ -149,7 +149,7 @@ export function RecurrenceDialog({ project, trigger }: RecurrenceDialogProps) {
                       <Calendar
                         mode="single"
                         selected={field.value}
-                        onSelect={field.onChange}
+                        onSelect={(date) => date && field.onChange(date)}
                         disabled={(date) =>
                           date < new Date() || date < new Date("1900-01-01")
                         }

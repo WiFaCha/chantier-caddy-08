@@ -3,7 +3,6 @@ export interface Project {
   title: string;
   address: string;
   price: number;
-  type: "Mensuel" | "Ponctuel";
   details?: string;
   color: "violet" | "blue" | "green" | "red";
 }
