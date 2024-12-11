@@ -47,7 +47,8 @@ export function RecurrenceDialog({ project, trigger }: RecurrenceDialogProps) {
 
   const handleSubmit = (data: RecurrenceFormValues) => {
     const startDate = new Date();
-    const endDate = data.endDate;
+    const endDate = new Date(data.endDate);
+    endDate.setHours(23, 59, 59, 999); // Set to end of day
     const weekdays = data.weekdays;
     
     const scheduledProjects = [];
@@ -64,14 +65,10 @@ export function RecurrenceDialog({ project, trigger }: RecurrenceDialogProps) {
       currentDate.setDate(currentDate.getDate() + 1);
     }
     
-    // Get existing scheduled projects
     const existingScheduled = localStorage.getItem('scheduledProjects');
     const existingProjects = existingScheduled ? JSON.parse(existingScheduled) : [];
-    
-    // Combine existing and new projects
     const updatedProjects = [...existingProjects, ...scheduledProjects];
     
-    // Save to localStorage
     localStorage.setItem('scheduledProjects', JSON.stringify(updatedProjects));
     
     form.reset();

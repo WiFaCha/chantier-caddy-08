@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { Checkbox } from "@/components/ui/checkbox";
+import { MapPin } from "lucide-react";
 import { ScheduledProject } from "@/types/calendar";
 
 export function Stats() {
@@ -21,6 +22,12 @@ export function Stats() {
     });
     localStorage.setItem('scheduledProjects', JSON.stringify(updatedProjects));
     refetch();
+  };
+
+  const handleAddressClick = (address: string) => {
+    if (address) {
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`, '_blank');
+    }
   };
 
   const todayProjects = scheduledProjects.filter((project: ScheduledProject) => {
@@ -65,7 +72,13 @@ export function Stats() {
                 <div>
                   <div className="font-medium">{project.title}</div>
                   {project.address && (
-                    <div className="text-sm">{project.address}</div>
+                    <button 
+                      onClick={() => handleAddressClick(project.address)}
+                      className="flex items-center text-sm hover:underline"
+                    >
+                      <MapPin className="mr-1 h-4 w-4" />
+                      {project.address}
+                    </button>
                   )}
                 </div>
               </div>
