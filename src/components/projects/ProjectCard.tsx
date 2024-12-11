@@ -11,11 +11,12 @@ interface ProjectCardProps {
   price: number;
   details?: string;
   color: "violet" | "blue" | "green" | "red";
+  type?: "Mensuel" | "Ponctuel";
   onUpdate: (data: Omit<ProjectCardProps, "id" | "onUpdate" | "onDelete">) => void;
   onDelete: () => void;
 }
 
-export function ProjectCard({ id, title, address, price, details, color, onUpdate, onDelete }: ProjectCardProps) {
+export function ProjectCard({ id, title, address, price, details, color, type, onUpdate, onDelete }: ProjectCardProps) {
   const borderColor = {
     violet: "border-violet-500",
     blue: "border-blue-500",
@@ -44,7 +45,7 @@ export function ProjectCard({ id, title, address, price, details, color, onUpdat
         </div>
         <div className="flex items-center space-x-1">
           <RecurrenceDialog
-            project={{ id, title, address, price, details, color }}
+            project={{ id, title, address, price, details, color, type }}
             trigger={
               <Button variant="ghost" size="icon">
                 <RotateCw className="h-4 w-4" />
@@ -52,7 +53,7 @@ export function ProjectCard({ id, title, address, price, details, color, onUpdat
             }
           />
           <ProjectDialog
-            project={{ title, address, price, details, color }}
+            project={{ title, address, price, details, color, type }}
             onSubmit={onUpdate}
             trigger={
               <Button variant="ghost" size="icon">

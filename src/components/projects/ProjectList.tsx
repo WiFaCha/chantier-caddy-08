@@ -12,6 +12,7 @@ interface Project {
   price: number;
   details?: string;
   color: "violet" | "blue" | "green" | "red";
+  type?: "Mensuel" | "Ponctuel";
 }
 
 export function ProjectList() {
