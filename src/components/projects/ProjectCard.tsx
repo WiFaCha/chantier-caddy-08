@@ -9,14 +9,13 @@ interface ProjectCardProps {
   title: string;
   address: string;
   price: number;
-  type: "Mensuel" | "Ponctuel";
   details?: string;
   color: "violet" | "blue" | "green" | "red";
   onUpdate: (data: Omit<ProjectCardProps, "id" | "onUpdate" | "onDelete">) => void;
   onDelete: () => void;
 }
 
-export function ProjectCard({ id, title, address, price, type, details, color, onUpdate, onDelete }: ProjectCardProps) {
+export function ProjectCard({ id, title, address, price, details, color, onUpdate, onDelete }: ProjectCardProps) {
   const borderColor = {
     violet: "border-violet-500",
     blue: "border-blue-500",
@@ -45,7 +44,7 @@ export function ProjectCard({ id, title, address, price, type, details, color, o
         </div>
         <div className="flex items-center space-x-1">
           <RecurrenceDialog
-            project={{ id, title, address, price, type, details, color }}
+            project={{ id, title, address, price, details, color }}
             trigger={
               <Button variant="ghost" size="icon">
                 <RotateCw className="h-4 w-4" />
@@ -53,7 +52,7 @@ export function ProjectCard({ id, title, address, price, type, details, color, o
             }
           />
           <ProjectDialog
-            project={{ title, address, price, type, details, color }}
+            project={{ title, address, price, details, color }}
             onSubmit={onUpdate}
             trigger={
               <Button variant="ghost" size="icon">
@@ -69,7 +68,6 @@ export function ProjectCard({ id, title, address, price, type, details, color, o
       <CardContent>
         <div className="flex justify-between">
           <div className="text-2xl font-bold">{price.toFixed(2)} €</div>
-          <div className="text-sm text-muted-foreground">{type}</div>
         </div>
         {details && <p className="mt-2 text-sm text-muted-foreground">{details}</p>}
       </CardContent>
