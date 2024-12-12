@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin, Pencil, RotateCw, Trash } from "lucide-react";
 import { ProjectDialog } from "./ProjectDialog";
 import { RecurrenceDialog } from "./RecurrenceDialog";
+import { Project } from "@/types/calendar";
 
 interface ProjectCardProps {
   id: string;
@@ -11,8 +12,8 @@ interface ProjectCardProps {
   price: number;
   details?: string;
   color: "violet" | "blue" | "green" | "red";
-  type?: "Mensuel" | "Ponctuel";
-  onUpdate: (data: Omit<ProjectCardProps, "id" | "onUpdate" | "onDelete">) => void;
+  type: "quotidien" | "hebdomadaire" | "mensuel" | "trimestriel" | "annuel";
+  onUpdate: (data: Omit<Project, "id">) => void;
   onDelete: () => void;
 }
 

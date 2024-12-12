@@ -4,16 +4,7 @@ import { Plus } from "lucide-react";
 import { ProjectCard } from "./ProjectCard";
 import { ProjectDialog } from "./ProjectDialog";
 import { useState } from "react";
-
-interface Project {
-  id: string;
-  title: string;
-  address: string;
-  price: number;
-  details?: string;
-  color: "violet" | "blue" | "green" | "red";
-  type?: "Mensuel" | "Ponctuel";
-}
+import { Project } from "@/types/calendar";
 
 export function ProjectList() {
   const [projects, setProjects] = useState<Project[]>(() => {
