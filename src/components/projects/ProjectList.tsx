@@ -22,11 +22,12 @@ export function ProjectList() {
         .from('projects')
         .select('*');
       
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
       
-      return data || [];
+      return (data || []).map(project => ({
+        ...project,
+        color: project.color as "violet" | "blue" | "green" | "red"
+      }));
     },
   });
 

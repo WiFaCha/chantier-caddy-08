@@ -3,7 +3,7 @@ import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { CalendarNavigation } from "./CalendarNavigation";
-import { Project, ScheduledProject } from "@/types/calendar";
+import { Project, ScheduledProject, SupabaseScheduledProject } from "@/types/calendar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { CalendarGrid } from "./CalendarGrid";
 import { getDaysToDisplay } from "@/utils/calendarUtils";
@@ -24,7 +24,12 @@ export function Calendar() {
         .select('*');
       
       if (error) throw error;
-      return data || [];
+      
+      // Ensure the color is of the correct type
+      return (data || []).map(project => ({
+        ...project,
+        color: project.color as "violet" | "blue" | "green" | "red"
+      }));
     },
   });
 
@@ -42,6 +47,7 @@ export function Calendar() {
       
       return data.map((sp: any) => ({
         ...sp.project,
+        color: sp.project.color as "violet" | "blue" | "green" | "red",
         scheduleId: sp.id,
         date: new Date(sp.schedule_date),
         completed: sp.completed,

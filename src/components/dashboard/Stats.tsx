@@ -25,6 +25,7 @@ export function Stats() {
       
       return data.map((sp: any) => ({
         ...sp.project,
+        color: sp.project.color as "violet" | "blue" | "green" | "red",
         scheduleId: sp.id,
         date: new Date(sp.schedule_date),
         completed: sp.completed,
