@@ -5,38 +5,108 @@ import { ProjectCard } from "./ProjectCard";
 import { ProjectDialog } from "./ProjectDialog";
 import { useState } from "react";
 import { Project } from "@/types/calendar";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 export function ProjectList() {
-  const [projects, setProjects] = useState<Project[]>(() => {
-    const stored = localStorage.getItem('projects');
-    return stored ? JSON.parse(stored) : [];
-  });
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
-  const handleCreateProject = (data: Omit<Project, "id">) => {
-    const newProjects = [...projects, { ...data, id: Date.now().toString() }];
-    setProjects(newProjects);
-    localStorage.setItem('projects', JSON.stringify(newProjects));
-    setDialogOpen(false);
+  const { data: projects = [], isLoading } = useQuery({
+    queryKey: ['projects'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*');
+      
+      if (error) {
+        throw error;
+      }
+      
+      return data || [];
+    },
+  });
+
+  const handleCreateProject = async (data: Omit<Project, "id">) => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .insert([data]);
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      setDialogOpen(false);
+      toast({
+        title: "Succès",
+        description: "Le chantier a été créé avec succès",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleUpdateProject = (id: string, data: Omit<Project, "id">) => {
-    const newProjects = projects.map((project) => (project.id === id ? { ...data, id } : project));
-    setProjects(newProjects);
-    localStorage.setItem('projects', JSON.stringify(newProjects));
+  const handleUpdateProject = async (id: string, data: Omit<Project, "id">) => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update(data)
+        .eq('id', id);
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast({
+        title: "Succès",
+        description: "Le chantier a été mis à jour avec succès",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDeleteProject = (id: string) => {
-    const newProjects = projects.filter((project) => project.id !== id);
-    setProjects(newProjects);
-    localStorage.setItem('projects', JSON.stringify(newProjects));
+  const handleDeleteProject = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast({
+        title: "Succès",
+        description: "Le chantier a été supprimé avec succès",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const filteredProjects = projects.filter(project => 
     project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     project.address.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (isLoading) {
+    return <div>Chargement...</div>;
+  }
 
   return (
     <div className="space-y-8">

@@ -3,28 +3,77 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Checkbox } from "@/components/ui/checkbox";
 import { MapPin, Clock } from "lucide-react";
 import { ScheduledProject } from "@/types/calendar";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
+import { useEffect } from "react";
 
 export function Stats() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: scheduledProjects = [] } = useQuery({
     queryKey: ['scheduledProjects'],
     queryFn: async () => {
-      const stored = localStorage.getItem('scheduledProjects');
-      return stored ? JSON.parse(stored).map((p: any) => ({ ...p, date: new Date(p.date) })) : [];
+      const { data, error } = await supabase
+        .from('scheduled_projects')
+        .select(`
+          *,
+          project:projects(*)
+        `);
+      
+      if (error) throw error;
+      
+      return data.map((sp: any) => ({
+        ...sp.project,
+        scheduleId: sp.id,
+        date: new Date(sp.schedule_date),
+        completed: sp.completed,
+        time: sp.time
+      })) || [];
     },
   });
 
-  const handleToggleComplete = (scheduleId: string) => {
-    const updatedProjects = scheduledProjects.map((project: ScheduledProject) => {
-      if (project.scheduleId === scheduleId) {
-        return { ...project, completed: !project.completed };
-      }
-      return project;
-    });
-    localStorage.setItem('scheduledProjects', JSON.stringify(updatedProjects));
-    queryClient.setQueryData(['scheduledProjects'], updatedProjects);
+  const handleToggleComplete = async (scheduleId: string) => {
+    try {
+      const currentProject = scheduledProjects.find(project => project.scheduleId === scheduleId);
+      const { error } = await supabase
+        .from('scheduled_projects')
+        .update({ completed: !currentProject?.completed })
+        .eq('id', scheduleId);
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
+
+  // Set up real-time subscription
+  useEffect(() => {
+    const scheduledProjectsSubscription = supabase
+      .channel('scheduled_projects_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'scheduled_projects'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      scheduledProjectsSubscription.unsubscribe();
+    };
+  }, [queryClient]);
 
   const handleAddressClick = (address: string) => {
     if (address) {

@@ -1,83 +1,146 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { CalendarNavigation } from "./CalendarNavigation";
 import { Project, ScheduledProject } from "@/types/calendar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { CalendarGrid } from "./CalendarGrid";
 import { getDaysToDisplay } from "@/utils/calendarUtils";
-import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 export function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"month" | "week" | "twoWeeks">("week");
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: projects = [] } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
-      const storedProjects = localStorage.getItem('projects');
-      return storedProjects ? JSON.parse(storedProjects) : [];
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*');
+      
+      if (error) throw error;
+      return data || [];
     },
   });
 
-  const { data: scheduledProjects = [], refetch } = useQuery({
+  const { data: scheduledProjects = [] } = useQuery({
     queryKey: ['scheduledProjects'],
     queryFn: async () => {
-      const storedSchedule = localStorage.getItem('scheduledProjects');
-      return storedSchedule ? JSON.parse(storedSchedule).map((project: any) => ({
-        ...project,
-        date: new Date(project.date)
-      })) : [];
+      const { data, error } = await supabase
+        .from('scheduled_projects')
+        .select(`
+          *,
+          project:projects(*)
+        `);
+      
+      if (error) throw error;
+      
+      return data.map((sp: any) => ({
+        ...sp.project,
+        scheduleId: sp.id,
+        date: new Date(sp.schedule_date),
+        completed: sp.completed,
+        time: sp.time
+      })) || [];
     },
   });
 
   const isMobile = useIsMobile();
 
-  const updateScheduledProjects = (newScheduledProjects: ScheduledProject[]) => {
-    localStorage.setItem('scheduledProjects', JSON.stringify(newScheduledProjects));
-    queryClient.setQueryData(['scheduledProjects'], newScheduledProjects);
+  const handleAddProject = async (day: number, project: Project) => {
+    try {
+      const scheduleDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+      const { error } = await supabase
+        .from('scheduled_projects')
+        .insert([{
+          project_id: project.id,
+          schedule_date: scheduleDate.toISOString(),
+        }]);
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
+      toast({
+        title: "Succès",
+        description: "Le chantier a été planifié avec succès",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleAddProject = (day: number, project: Project) => {
-    const scheduleDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    const newScheduledProject: ScheduledProject = {
-      ...project,
-      scheduleId: `${project.id}-${Date.now()}`,
-      date: scheduleDate,
-      completed: false
-    };
-    const newScheduledProjects = [...scheduledProjects, newScheduledProject];
-    updateScheduledProjects(newScheduledProjects);
+  const handleDeleteProject = async (scheduleId: string) => {
+    try {
+      const { error } = await supabase
+        .from('scheduled_projects')
+        .delete()
+        .eq('id', scheduleId);
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
+      toast({
+        title: "Succès",
+        description: "Le chantier a été supprimé du calendrier",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDeleteProject = (scheduleId: string) => {
-    const newScheduledProjects = scheduledProjects.filter(project => project.scheduleId !== scheduleId);
-    updateScheduledProjects(newScheduledProjects);
+  const handleToggleComplete = async (scheduleId: string) => {
+    try {
+      const currentProject = scheduledProjects.find(p => p.scheduleId === scheduleId);
+      const { error } = await supabase
+        .from('scheduled_projects')
+        .update({ completed: !currentProject?.completed })
+        .eq('id', scheduleId);
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleToggleComplete = (scheduleId: string) => {
-    const newScheduledProjects = scheduledProjects.map(project => {
-      if (project.scheduleId === scheduleId) {
-        return { ...project, completed: !project.completed };
-      }
-      return project;
-    });
-    updateScheduledProjects(newScheduledProjects);
+  const handleTimeChange = async (scheduleId: string, time: string) => {
+    try {
+      const { error } = await supabase
+        .from('scheduled_projects')
+        .update({ time })
+        .eq('id', scheduleId);
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleTimeChange = (scheduleId: string, time: string) => {
-    const newScheduledProjects = scheduledProjects.map(project => {
-      if (project.scheduleId === scheduleId) {
-        return { ...project, time };
-      }
-      return project;
-    });
-    updateScheduledProjects(newScheduledProjects);
-  };
-
-  const handleDragEnd = (result: DropResult) => {
+  const handleDragEnd = async (result: DropResult) => {
     if (!result.destination) return;
 
     const { source, destination, draggableId } = result;
@@ -86,20 +149,51 @@ export function Calendar() {
 
     if (sourceDay === destinationDay) return;
 
-    const projectToMove = scheduledProjects.find(p => p.scheduleId === draggableId);
-    if (!projectToMove) return;
+    try {
+      const projectToMove = scheduledProjects.find(p => p.scheduleId === draggableId);
+      if (!projectToMove) return;
 
-    const newDate = new Date(projectToMove.date);
-    newDate.setDate(destinationDay);
+      const newDate = new Date(projectToMove.date);
+      newDate.setDate(destinationDay);
 
-    const newScheduledProjects = scheduledProjects.map(project => {
-      if (project.scheduleId === draggableId) {
-        return { ...project, date: newDate };
-      }
-      return project;
-    });
-    updateScheduledProjects(newScheduledProjects);
+      const { error } = await supabase
+        .from('scheduled_projects')
+        .update({ schedule_date: newDate.toISOString() })
+        .eq('id', draggableId);
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
+
+  // Set up real-time subscription
+  useEffect(() => {
+    const scheduledProjectsSubscription = supabase
+      .channel('scheduled_projects_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'scheduled_projects'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      scheduledProjectsSubscription.unsubscribe();
+    };
+  }, [queryClient]);
 
   const days = getDaysToDisplay(currentDate, viewMode, isMobile);
 
