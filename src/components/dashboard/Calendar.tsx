@@ -60,6 +60,7 @@ export function Calendar() {
         .insert([{
           project_id: project.id,
           schedule_date: scheduleDate.toISOString(),
+          user_id: (await supabase.auth.getUser()).data.user?.id
         }]);
 
       if (error) throw error;
@@ -106,7 +107,10 @@ export function Calendar() {
       const currentProject = scheduledProjects.find(p => p.scheduleId === scheduleId);
       const { error } = await supabase
         .from('scheduled_projects')
-        .update({ completed: !currentProject?.completed })
+        .update({ 
+          completed: !currentProject?.completed,
+          user_id: (await supabase.auth.getUser()).data.user?.id 
+        })
         .eq('id', scheduleId);
 
       if (error) throw error;
@@ -125,7 +129,10 @@ export function Calendar() {
     try {
       const { error } = await supabase
         .from('scheduled_projects')
-        .update({ time })
+        .update({ 
+          time: time,
+          user_id: (await supabase.auth.getUser()).data.user?.id 
+        })
         .eq('id', scheduleId);
 
       if (error) throw error;

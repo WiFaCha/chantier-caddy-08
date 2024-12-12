@@ -34,7 +34,10 @@ export function ProjectList() {
     try {
       const { error } = await supabase
         .from('projects')
-        .insert([data]);
+        .insert([{
+          ...data,
+          user_id: (await supabase.auth.getUser()).data.user?.id
+        }]);
 
       if (error) throw error;
 

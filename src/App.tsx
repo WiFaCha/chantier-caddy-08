@@ -7,9 +7,8 @@ import { TopNav } from "./components/layout/TopNav";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Projects from "./pages/Projects";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
-import { createClient } from '@supabase/supabase-js';
 
 const queryClient = new QueryClient();
 
