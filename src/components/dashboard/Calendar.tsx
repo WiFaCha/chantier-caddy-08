@@ -7,13 +7,14 @@ import { Project, ScheduledProject } from "@/types/calendar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { CalendarGrid } from "./CalendarGrid";
 import { getDaysToDisplay } from "@/utils/calendarUtils";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [scheduledProjects, setScheduledProjects] = useState<ScheduledProject[]>([]);
   const [viewMode, setViewMode] = useState<"month" | "week" | "twoWeeks">("week");
+  const queryClient = useQueryClient();
 
-  const { data: projects = [] } = useQuery<Project[]>({
+  const { data: projects = [] } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
       const storedProjects = localStorage.getItem('projects');
@@ -21,42 +22,22 @@ export function Calendar() {
     },
   });
 
-  const isMobile = useIsMobile();
-
-  useEffect(() => {
-    const storedSchedule = localStorage.getItem('scheduledProjects');
-    if (storedSchedule) {
-      setScheduledProjects(JSON.parse(storedSchedule).map((project: any) => ({
+  const { data: scheduledProjects = [], refetch } = useQuery({
+    queryKey: ['scheduledProjects'],
+    queryFn: async () => {
+      const storedSchedule = localStorage.getItem('scheduledProjects');
+      return storedSchedule ? JSON.parse(storedSchedule).map((project: any) => ({
         ...project,
         date: new Date(project.date)
-      })));
-    }
-  }, []);
+      })) : [];
+    },
+  });
 
-  useEffect(() => {
-    localStorage.setItem('scheduledProjects', JSON.stringify(scheduledProjects));
-  }, [scheduledProjects]);
+  const isMobile = useIsMobile();
 
-  const handlePrevPeriod = () => {
-    const newDate = new Date(currentDate);
-    if (viewMode === "month") {
-      newDate.setMonth(currentDate.getMonth() - 1);
-    } else {
-      const days = viewMode === "week" ? 7 : 14;
-      newDate.setDate(currentDate.getDate() - days);
-    }
-    setCurrentDate(newDate);
-  };
-
-  const handleNextPeriod = () => {
-    const newDate = new Date(currentDate);
-    if (viewMode === "month") {
-      newDate.setMonth(currentDate.getMonth() + 1);
-    } else {
-      const days = viewMode === "week" ? 7 : 14;
-      newDate.setDate(currentDate.getDate() + days);
-    }
-    setCurrentDate(newDate);
+  const updateScheduledProjects = (newScheduledProjects: ScheduledProject[]) => {
+    localStorage.setItem('scheduledProjects', JSON.stringify(newScheduledProjects));
+    queryClient.setQueryData(['scheduledProjects'], newScheduledProjects);
   };
 
   const handleAddProject = (day: number, project: Project) => {
@@ -67,29 +48,33 @@ export function Calendar() {
       date: scheduleDate,
       completed: false
     };
-    setScheduledProjects([...scheduledProjects, newScheduledProject]);
+    const newScheduledProjects = [...scheduledProjects, newScheduledProject];
+    updateScheduledProjects(newScheduledProjects);
   };
 
   const handleDeleteProject = (scheduleId: string) => {
-    setScheduledProjects(scheduledProjects.filter(project => project.scheduleId !== scheduleId));
+    const newScheduledProjects = scheduledProjects.filter(project => project.scheduleId !== scheduleId);
+    updateScheduledProjects(newScheduledProjects);
   };
 
   const handleToggleComplete = (scheduleId: string) => {
-    setScheduledProjects(scheduledProjects.map(project => {
+    const newScheduledProjects = scheduledProjects.map(project => {
       if (project.scheduleId === scheduleId) {
         return { ...project, completed: !project.completed };
       }
       return project;
-    }));
+    });
+    updateScheduledProjects(newScheduledProjects);
   };
 
   const handleTimeChange = (scheduleId: string, time: string) => {
-    setScheduledProjects(scheduledProjects.map(project => {
+    const newScheduledProjects = scheduledProjects.map(project => {
       if (project.scheduleId === scheduleId) {
         return { ...project, time };
       }
       return project;
-    }));
+    });
+    updateScheduledProjects(newScheduledProjects);
   };
 
   const handleDragEnd = (result: DropResult) => {
@@ -107,12 +92,13 @@ export function Calendar() {
     const newDate = new Date(projectToMove.date);
     newDate.setDate(destinationDay);
 
-    setScheduledProjects(scheduledProjects.map(project => {
+    const newScheduledProjects = scheduledProjects.map(project => {
       if (project.scheduleId === draggableId) {
         return { ...project, date: newDate };
       }
       return project;
-    }));
+    });
+    updateScheduledProjects(newScheduledProjects);
   };
 
   const days = getDaysToDisplay(currentDate, viewMode, isMobile);
@@ -125,8 +111,26 @@ export function Calendar() {
           currentDate={currentDate}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
-          onPrevPeriod={handlePrevPeriod}
-          onNextPeriod={handleNextPeriod}
+          onPrevPeriod={() => {
+            const newDate = new Date(currentDate);
+            if (viewMode === "month") {
+              newDate.setMonth(currentDate.getMonth() - 1);
+            } else {
+              const days = viewMode === "week" ? 7 : 14;
+              newDate.setDate(currentDate.getDate() - days);
+            }
+            setCurrentDate(newDate);
+          }}
+          onNextPeriod={() => {
+            const newDate = new Date(currentDate);
+            if (viewMode === "month") {
+              newDate.setMonth(currentDate.getMonth() + 1);
+            } else {
+              const days = viewMode === "week" ? 7 : 14;
+              newDate.setDate(currentDate.getDate() + days);
+            }
+            setCurrentDate(newDate);
+          }}
         />
       </CardHeader>
       <CardContent className={`${isMobile ? 'px-2' : 'px-6'}`}>

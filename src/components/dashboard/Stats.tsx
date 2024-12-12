@@ -1,11 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MapPin } from "lucide-react";
+import { MapPin, Clock } from "lucide-react";
 import { ScheduledProject } from "@/types/calendar";
 
 export function Stats() {
-  const { data: scheduledProjects = [], refetch } = useQuery({
+  const queryClient = useQueryClient();
+
+  const { data: scheduledProjects = [] } = useQuery({
     queryKey: ['scheduledProjects'],
     queryFn: async () => {
       const stored = localStorage.getItem('scheduledProjects');
@@ -21,7 +23,7 @@ export function Stats() {
       return project;
     });
     localStorage.setItem('scheduledProjects', JSON.stringify(updatedProjects));
-    refetch();
+    queryClient.setQueryData(['scheduledProjects'], updatedProjects);
   };
 
   const handleAddressClick = (address: string) => {
@@ -69,7 +71,7 @@ export function Stats() {
                   onCheckedChange={() => handleToggleComplete(project.scheduleId)}
                   className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
                 />
-                <div>
+                <div className="flex-1">
                   <div className="font-medium">{project.title}</div>
                   {project.address && (
                     <button 
@@ -79,6 +81,12 @@ export function Stats() {
                       <MapPin className="mr-1 h-4 w-4" />
                       {project.address}
                     </button>
+                  )}
+                  {project.time && (
+                    <div className="flex items-center text-sm mt-1">
+                      <Clock className="mr-1 h-4 w-4" />
+                      {project.time}
+                    </div>
                   )}
                 </div>
               </div>
