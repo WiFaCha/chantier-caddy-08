@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -13,6 +14,7 @@ const formSchema = z.object({
   price: z.number().min(0, "Le prix doit être positif"),
   details: z.string().optional(),
   color: z.enum(["violet", "blue", "green", "red"]),
+  type: z.enum(["quotidien", "hebdomadaire", "mensuel", "trimestriel", "annuel"]),
 });
 
 type ProjectFormValues = z.infer<typeof formSchema>;
@@ -34,6 +36,7 @@ export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }
       price: 0,
       details: "",
       color: "violet",
+      type: "mensuel",
     },
   });
 
@@ -87,6 +90,29 @@ export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }
                   <FormControl>
                     <Input type="number" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value))} />
                   </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Type</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionnez un type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="quotidien">Quotidien</SelectItem>
+                      <SelectItem value="hebdomadaire">Hebdomadaire</SelectItem>
+                      <SelectItem value="mensuel">Mensuel</SelectItem>
+                      <SelectItem value="trimestriel">Trimestriel</SelectItem>
+                      <SelectItem value="annuel">Annuel</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </FormItem>
               )}
             />

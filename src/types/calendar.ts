@@ -5,7 +5,7 @@ export interface Project {
   price: number;
   details?: string;
   color: "violet" | "blue" | "green" | "red";
-  type?: "Mensuel" | "Ponctuel";
+  type: "quotidien" | "hebdomadaire" | "mensuel" | "trimestriel" | "annuel";
 }
 
 export interface ScheduledProject extends Project {
