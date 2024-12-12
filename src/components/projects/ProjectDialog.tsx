@@ -40,8 +40,8 @@ export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }
     },
   });
 
-  const handleSubmit = (data: ProjectFormValues) => {
-    onSubmit(data);
+  const handleSubmit = async (data: ProjectFormValues) => {
+    await onSubmit(data);
     form.reset();
     if (onOpenChange) {
       onOpenChange(false);
