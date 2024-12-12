@@ -25,10 +25,10 @@ export function Calendar() {
       
       if (error) throw error;
       
-      // Ensure the color is of the correct type
       return (data || []).map(project => ({
         ...project,
-        color: project.color as "violet" | "blue" | "green" | "red"
+        color: project.color as "violet" | "blue" | "green" | "red",
+        type: project.type as "Mensuel" | "Ponctuel"
       }));
     },
   });
@@ -48,6 +48,7 @@ export function Calendar() {
       return data.map((sp: any) => ({
         ...sp.project,
         color: sp.project.color as "violet" | "blue" | "green" | "red",
+        type: sp.project.type as "Mensuel" | "Ponctuel",
         scheduleId: sp.id,
         date: new Date(sp.schedule_date),
         completed: sp.completed,

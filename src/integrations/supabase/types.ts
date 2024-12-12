@@ -47,24 +47,30 @@ export type Database = {
       }
       scheduled_projects: {
         Row: {
+          completed: boolean | null
           created_at: string | null
           id: string
           project_id: string | null
           schedule_date: string
+          time: string | null
           user_id: string
         }
         Insert: {
+          completed?: boolean | null
           created_at?: string | null
           id?: string
           project_id?: string | null
           schedule_date: string
+          time?: string | null
           user_id: string
         }
         Update: {
+          completed?: boolean | null
           created_at?: string | null
           id?: string
           project_id?: string | null
           schedule_date?: string
+          time?: string | null
           user_id?: string
         }
         Relationships: [

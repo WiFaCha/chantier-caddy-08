@@ -26,7 +26,8 @@ export function ProjectList() {
       
       return (data || []).map(project => ({
         ...project,
-        color: project.color as "violet" | "blue" | "green" | "red"
+        color: project.color as "violet" | "blue" | "green" | "red",
+        type: project.type as "Mensuel" | "Ponctuel"
       }));
     },
   });
