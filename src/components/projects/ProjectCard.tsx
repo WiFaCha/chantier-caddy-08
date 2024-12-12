@@ -12,7 +12,7 @@ interface ProjectCardProps {
   price: number;
   details?: string;
   color: "violet" | "blue" | "green" | "red";
-  type: "quotidien" | "hebdomadaire" | "mensuel" | "trimestriel" | "annuel";
+  type: "Mensuel" | "Ponctuel";
   onUpdate: (data: Omit<Project, "id">) => void;
   onDelete: () => void;
 }

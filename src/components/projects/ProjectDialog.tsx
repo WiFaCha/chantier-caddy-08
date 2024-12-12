@@ -14,7 +14,7 @@ const formSchema = z.object({
   price: z.number().min(0, "Le prix doit être positif"),
   details: z.string().optional(),
   color: z.enum(["violet", "blue", "green", "red"]),
-  type: z.enum(["quotidien", "hebdomadaire", "mensuel", "trimestriel", "annuel"]),
+  type: z.enum(["Mensuel", "Ponctuel"]),
 });
 
 type ProjectFormValues = z.infer<typeof formSchema>;
@@ -36,7 +36,7 @@ export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }
       price: 0,
       details: "",
       color: "violet",
-      type: "mensuel",
+      type: "Mensuel",
     },
   });
 
@@ -106,11 +106,8 @@ export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="quotidien">Quotidien</SelectItem>
-                      <SelectItem value="hebdomadaire">Hebdomadaire</SelectItem>
-                      <SelectItem value="mensuel">Mensuel</SelectItem>
-                      <SelectItem value="trimestriel">Trimestriel</SelectItem>
-                      <SelectItem value="annuel">Annuel</SelectItem>
+                      <SelectItem value="Mensuel">Mensuel</SelectItem>
+                      <SelectItem value="Ponctuel">Ponctuel</SelectItem>
                     </SelectContent>
                   </Select>
                 </FormItem>
