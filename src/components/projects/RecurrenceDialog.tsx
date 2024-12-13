@@ -53,28 +53,37 @@ export function RecurrenceDialog({ project, trigger }: RecurrenceDialogProps) {
 
   const handleSubmit = async (data: RecurrenceFormValues) => {
     try {
+      // Créer les dates de début et fin en UTC
       const startDate = new Date();
-      startDate.setHours(0, 0, 0, 0);
-      const endDate = new Date(data.endDate);
-      endDate.setHours(23, 59, 59, 999);
-      const weekdays = data.weekdays;
+      startDate.setUTCHours(0, 0, 0, 0);
       
-      const scheduledProjects = [];
+      const endDate = new Date(data.endDate);
+      endDate.setUTCHours(23, 59, 59, 999);
+      
+      const weekdays = data.weekdays;
       const currentDate = new Date(startDate);
       
       while (currentDate <= endDate) {
         if (weekdays.includes(currentDate.getDay())) {
+          // Créer la date en UTC pour l'insertion
+          const scheduleDate = new Date(Date.UTC(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            currentDate.getDate()
+          ));
+          
           const { error } = await supabase
             .from('scheduled_projects')
             .insert({
               project_id: project.id,
-              schedule_date: currentDate.toISOString().split('T')[0], // Format as YYYY-MM-DD
+              schedule_date: scheduleDate.toISOString().split('T')[0],
               user_id: (await supabase.auth.getUser()).data.user?.id
             });
           
           if (error) throw error;
         }
-        currentDate.setDate(currentDate.getDate() + 1);
+        // Avancer d'un jour en préservant l'heure UTC
+        currentDate.setUTCDate(currentDate.getUTCDate() + 1);
       }
       
       queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
