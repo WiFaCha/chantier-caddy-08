@@ -36,7 +36,22 @@ export function LoginForm() {
           password,
         });
         
-        if (error) throw error;
+        if (error) {
+          if (error.message === "Invalid login credentials") {
+            toast({
+              title: "Erreur de connexion",
+              description: "Email ou mot de passe incorrect",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Erreur",
+              description: error.message,
+              variant: "destructive",
+            });
+          }
+          return;
+        }
         
         navigate("/");
         toast({
@@ -58,7 +73,14 @@ export function LoginForm() {
           password,
         });
         
-        if (error) throw error;
+        if (error) {
+          toast({
+            title: "Erreur",
+            description: error.message,
+            variant: "destructive",
+          });
+          return;
+        }
         
         toast({
           title: "Compte créé",
@@ -68,7 +90,14 @@ export function LoginForm() {
       } else if (mode === "reset") {
         const { error } = await supabase.auth.resetPasswordForEmail(email);
         
-        if (error) throw error;
+        if (error) {
+          toast({
+            title: "Erreur",
+            description: error.message,
+            variant: "destructive",
+          });
+          return;
+        }
         
         toast({
           title: "Email envoyé",
