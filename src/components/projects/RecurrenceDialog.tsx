@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 const formSchema = z.object({
   weekdays: z.array(z.number()),
@@ -39,6 +40,9 @@ interface RecurrenceDialogProps {
 
 export function RecurrenceDialog({ project, trigger }: RecurrenceDialogProps) {
   const [open, setOpen] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
   const form = useForm<RecurrenceFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -50,6 +54,7 @@ export function RecurrenceDialog({ project, trigger }: RecurrenceDialogProps) {
   const handleSubmit = async (data: RecurrenceFormValues) => {
     try {
       const startDate = new Date();
+      startDate.setHours(0, 0, 0, 0);
       const endDate = new Date(data.endDate);
       endDate.setHours(23, 59, 59, 999);
       const weekdays = data.weekdays;
@@ -63,7 +68,7 @@ export function RecurrenceDialog({ project, trigger }: RecurrenceDialogProps) {
             .from('scheduled_projects')
             .insert({
               project_id: project.id,
-              schedule_date: currentDate.toISOString(),
+              schedule_date: currentDate.toISOString().split('T')[0], // Format as YYYY-MM-DD
               user_id: (await supabase.auth.getUser()).data.user?.id
             });
           
@@ -72,6 +77,7 @@ export function RecurrenceDialog({ project, trigger }: RecurrenceDialogProps) {
         currentDate.setDate(currentDate.getDate() + 1);
       }
       
+      queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
       form.reset();
       setOpen(false);
       
@@ -118,11 +124,11 @@ export function RecurrenceDialog({ project, trigger }: RecurrenceDialogProps) {
                         className="flex flex-col items-center gap-1"
                       >
                         <Checkbox
-                          checked={field.value.includes(Number(value))}
+                          checked={field.value?.includes(Number(value))}
                           onCheckedChange={(checked) => {
                             const updatedValue = checked
-                              ? [...field.value, Number(value)]
-                              : field.value.filter((day) => day !== Number(value));
+                              ? [...(field.value || []), Number(value)]
+                              : field.value?.filter((day) => day !== Number(value)) || [];
                             field.onChange(updatedValue);
                           }}
                         />
@@ -162,7 +168,11 @@ export function RecurrenceDialog({ project, trigger }: RecurrenceDialogProps) {
                       <Calendar
                         mode="single"
                         selected={field.value}
-                        onSelect={field.onChange}
+                        onSelect={(date) => {
+                          if (date) {
+                            field.onChange(date);
+                          }
+                        }}
                         disabled={(date) =>
                           date < new Date() || date < new Date("1900-01-01")
                         }

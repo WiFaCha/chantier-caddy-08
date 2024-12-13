@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { CalendarView } from "./CalendarView";
@@ -45,7 +45,7 @@ export function CalendarContainer() {
         color: sp.project.color as "violet" | "blue" | "green" | "red",
         type: sp.project.type as "Mensuel" | "Ponctuel",
         scheduleId: sp.id,
-        date: new Date(sp.schedule_date),
+        date: new Date(sp.schedule_date + 'T00:00:00'),
         completed: sp.completed,
         time: sp.time
       })) || [];
@@ -55,11 +55,13 @@ export function CalendarContainer() {
   const handleAddProject = async (day: number, project: Project) => {
     try {
       const scheduleDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+      scheduleDate.setHours(0, 0, 0, 0);
+      
       const { error } = await supabase
         .from('scheduled_projects')
         .insert([{
           project_id: project.id,
-          schedule_date: scheduleDate.toISOString(),
+          schedule_date: scheduleDate.toISOString().split('T')[0],
           user_id: (await supabase.auth.getUser()).data.user?.id
         }]);
 
@@ -146,27 +148,6 @@ export function CalendarContainer() {
       });
     }
   };
-
-  useEffect(() => {
-    const scheduledProjectsSubscription = supabase
-      .channel('scheduled_projects_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'scheduled_projects'
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      scheduledProjectsSubscription.unsubscribe();
-    };
-  }, [queryClient]);
 
   return (
     <CalendarView
