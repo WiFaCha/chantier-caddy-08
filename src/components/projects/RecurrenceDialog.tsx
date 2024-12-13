@@ -12,6 +12,8 @@ import { fr } from "date-fns/locale";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 const formSchema = z.object({
   weekdays: z.array(z.number()),
@@ -45,34 +47,45 @@ export function RecurrenceDialog({ project, trigger }: RecurrenceDialogProps) {
     },
   });
 
-  const handleSubmit = (data: RecurrenceFormValues) => {
-    const startDate = new Date();
-    const endDate = new Date(data.endDate);
-    endDate.setHours(23, 59, 59, 999);
-    const weekdays = data.weekdays;
-    
-    const scheduledProjects = [];
-    const currentDate = new Date(startDate);
-    
-    while (currentDate <= endDate) {
-      if (weekdays.includes(currentDate.getDay())) {
-        scheduledProjects.push({
-          ...project,
-          scheduleId: `${project.id}-${Date.now()}-${currentDate.getTime()}`,
-          date: new Date(currentDate),
-        });
+  const handleSubmit = async (data: RecurrenceFormValues) => {
+    try {
+      const startDate = new Date();
+      const endDate = new Date(data.endDate);
+      endDate.setHours(23, 59, 59, 999);
+      const weekdays = data.weekdays;
+      
+      const scheduledProjects = [];
+      const currentDate = new Date(startDate);
+      
+      while (currentDate <= endDate) {
+        if (weekdays.includes(currentDate.getDay())) {
+          const { error } = await supabase
+            .from('scheduled_projects')
+            .insert({
+              project_id: project.id,
+              schedule_date: currentDate.toISOString(),
+              user_id: (await supabase.auth.getUser()).data.user?.id
+            });
+          
+          if (error) throw error;
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
       }
-      currentDate.setDate(currentDate.getDate() + 1);
+      
+      form.reset();
+      setOpen(false);
+      
+      toast({
+        title: "Succès",
+        description: "Les chantiers ont été planifiés avec succès",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
     }
-    
-    const existingScheduled = localStorage.getItem('scheduledProjects');
-    const existingProjects = existingScheduled ? JSON.parse(existingScheduled) : [];
-    const updatedProjects = [...existingProjects, ...scheduledProjects];
-    
-    localStorage.setItem('scheduledProjects', JSON.stringify(updatedProjects));
-    
-    form.reset();
-    setOpen(false);
   };
 
   return (
@@ -149,7 +162,7 @@ export function RecurrenceDialog({ project, trigger }: RecurrenceDialogProps) {
                       <Calendar
                         mode="single"
                         selected={field.value}
-                        onSelect={(date) => date && field.onChange(date)}
+                        onSelect={field.onChange}
                         disabled={(date) =>
                           date < new Date() || date < new Date("1900-01-01")
                         }
