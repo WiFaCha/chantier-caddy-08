@@ -45,7 +45,7 @@ export function CalendarContainer() {
         color: sp.project.color as "violet" | "blue" | "green" | "red",
         type: sp.project.type as "Mensuel" | "Ponctuel",
         scheduleId: sp.id,
-        date: new Date(sp.schedule_date + 'T00:00:00'),
+        date: new Date(sp.schedule_date),
         completed: sp.completed,
         time: sp.time
       })) || [];
@@ -55,7 +55,6 @@ export function CalendarContainer() {
   const handleAddProject = async (day: number, project: Project) => {
     try {
       const scheduleDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-      scheduleDate.setHours(0, 0, 0, 0);
       
       const { error } = await supabase
         .from('scheduled_projects')
