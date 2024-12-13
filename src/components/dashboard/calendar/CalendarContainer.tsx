@@ -40,21 +40,32 @@ export function CalendarContainer() {
       
       if (error) throw error;
       
-      return data.map((sp: any) => ({
-        ...sp.project,
-        color: sp.project.color as "violet" | "blue" | "green" | "red",
-        type: sp.project.type as "Mensuel" | "Ponctuel",
-        scheduleId: sp.id,
-        date: new Date(sp.schedule_date),
-        completed: sp.completed,
-        time: sp.time
-      })) || [];
+      return data.map((sp: any) => {
+        // Créer une date à partir de schedule_date en s'assurant qu'elle est en UTC
+        const date = new Date(sp.schedule_date);
+        date.setUTCHours(0, 0, 0, 0);
+        
+        return {
+          ...sp.project,
+          color: sp.project.color as "violet" | "blue" | "green" | "red",
+          type: sp.project.type as "Mensuel" | "Ponctuel",
+          scheduleId: sp.id,
+          date: date,
+          completed: sp.completed,
+          time: sp.time
+        };
+      }) || [];
     },
   });
 
   const handleAddProject = async (day: number, project: Project) => {
     try {
-      const scheduleDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+      // Créer une date en UTC pour éviter les problèmes de fuseau horaire
+      const scheduleDate = new Date(Date.UTC(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        day
+      ));
       
       const { error } = await supabase
         .from('scheduled_projects')
