@@ -7,7 +7,7 @@ import { Project, ScheduledProject } from "@/types/calendar";
 
 export function CalendarContainer() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<"month" | "week" | "twoWeeks">("week");
+  const [viewMode, setViewMode] = useState<"month" | "week" | "twoWeeks">("month");
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -41,7 +41,6 @@ export function CalendarContainer() {
       if (error) throw error;
       
       return data.map((sp: any) => {
-        // Créer une date à partir de schedule_date en s'assurant qu'elle est en UTC
         const date = new Date(sp.schedule_date);
         date.setUTCHours(0, 0, 0, 0);
         
@@ -60,7 +59,6 @@ export function CalendarContainer() {
 
   const handleAddProject = async (day: number, project: Project) => {
     try {
-      // Créer une date en UTC pour éviter les problèmes de fuseau horaire
       const scheduleDate = new Date(Date.UTC(
         currentDate.getFullYear(),
         currentDate.getMonth(),
