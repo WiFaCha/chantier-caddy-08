@@ -14,7 +14,7 @@ const formSchema = z.object({
   address: z.string(),
   price: z.number().min(0, "Le prix doit être positif"),
   details: z.string().optional(),
-  color: z.enum(["violet", "blue", "green", "red", "purple", "pink", "orange", "ocean"]),
+  color: z.enum(["violet", "blue", "green", "red"]),
   type: z.enum(["Mensuel", "Ponctuel"]),
   window_cleaning: z.array(z.string()).default([]),
 });
@@ -128,7 +128,7 @@ export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }
                 <FormItem>
                   <FormLabel>Couleur</FormLabel>
                   <div className="flex gap-2 flex-wrap">
-                    {["violet", "blue", "green", "red", "purple", "pink", "orange", "ocean"].map((color) => (
+                    {["violet", "blue", "green", "red"].map((color) => (
                       <button
                         key={color}
                         type="button"
@@ -136,11 +136,7 @@ export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }
                           color === "violet" ? "bg-violet-500" :
                           color === "blue" ? "bg-blue-500" :
                           color === "green" ? "bg-green-500" :
-                          color === "red" ? "bg-red-500" :
-                          color === "purple" ? "bg-[#8B5CF6]" :
-                          color === "pink" ? "bg-[#D946EF]" :
-                          color === "orange" ? "bg-[#F97316]" :
-                          "bg-[#0EA5E9]"
+                          "bg-red-500"
                         } ${field.value === color ? "ring-2 ring-offset-2" : ""}`}
                         onClick={() => field.onChange(color)}
                       />
