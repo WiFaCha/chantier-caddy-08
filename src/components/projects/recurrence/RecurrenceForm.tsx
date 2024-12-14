@@ -1,10 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { UseFormReturn } from "react-hook-form";
@@ -60,49 +58,35 @@ export function RecurrenceForm({ form, onSubmit }: RecurrenceFormProps) {
           name="endDate"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Date de fin</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP", { locale: fr })
-                      ) : (
-                        <span>Choisir une date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={(date) => {
-                      if (date) {
+              <FormLabel>Date de fin (jj/mm/aaaa)</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="jj/mm/aaaa"
+                  value={field.value ? format(field.value, 'dd/MM/yyyy') : ''}
+                  onChange={(e) => {
+                    try {
+                      if (e.target.value) {
+                        const parsedDate = parse(e.target.value, 'dd/MM/yyyy', new Date());
                         const utcDate = new Date(Date.UTC(
-                          date.getFullYear(),
-                          date.getMonth(),
-                          date.getDate(),
+                          parsedDate.getFullYear(),
+                          parsedDate.getMonth(),
+                          parsedDate.getDate(),
                           0, 0, 0, 0
                         ));
                         field.onChange(utcDate);
+                      } else {
+                        field.onChange(undefined);
                       }
-                    }}
-                    disabled={(date) =>
-                      date < new Date() || date < new Date("1900-01-01")
+                    } catch (error) {
+                      // Invalid date format, don't update the field
                     }
-                    initialFocus
-                    locale={fr}
-                  />
-                </PopoverContent>
-              </Popover>
+                  }}
+                  className={cn(
+                    "w-full",
+                    !field.value && "text-muted-foreground"
+                  )}
+                />
+              </FormControl>
             </FormItem>
           )}
         />
