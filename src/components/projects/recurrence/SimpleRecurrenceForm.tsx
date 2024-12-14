@@ -3,21 +3,15 @@ import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-const simpleRecurrenceSchema = z.object({
-  weekdays: z.array(z.number()).min(1, "Sélectionnez au moins un jour"),
-  duration: z.enum(["1week", "2weeks", "1month", "3months"]),
-});
-
-type SimpleRecurrenceValues = z.infer<typeof simpleRecurrenceSchema>;
+import { RecurrenceFormValues, recurrenceFormSchema } from "./types";
 
 interface SimpleRecurrenceFormProps {
-  onSubmit: (values: SimpleRecurrenceValues) => void;
+  onSubmit: (values: RecurrenceFormValues) => void;
 }
 
 export function SimpleRecurrenceForm({ onSubmit }: SimpleRecurrenceFormProps) {
-  const form = useForm<SimpleRecurrenceValues>({
-    resolver: zodResolver(simpleRecurrenceSchema),
+  const form = useForm<RecurrenceFormValues>({
+    resolver: zodResolver(recurrenceFormSchema),
     defaultValues: {
       weekdays: [],
       duration: "1week",
@@ -35,10 +29,10 @@ export function SimpleRecurrenceForm({ onSubmit }: SimpleRecurrenceFormProps) {
   ];
 
   const durations = [
-    { value: "1week", label: "1 semaine" },
-    { value: "2weeks", label: "2 semaines" },
-    { value: "1month", label: "1 mois" },
-    { value: "3months", label: "3 mois" },
+    { value: "1week" as const, label: "1 semaine" },
+    { value: "2weeks" as const, label: "2 semaines" },
+    { value: "1month" as const, label: "1 mois" },
+    { value: "3months" as const, label: "3 mois" },
   ];
 
   return (

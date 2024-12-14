@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Project } from "@/types/calendar";
+import { RecurrenceFormValues } from "./types";
 
 const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000000";
 
@@ -9,7 +10,7 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const getDurationDays = (duration: string) => {
+  const getDurationDays = (duration: "1week" | "2weeks" | "1month" | "3months") => {
     switch (duration) {
       case "1week":
         return 7;
@@ -24,7 +25,7 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
     }
   };
 
-  const handleSubmit = async (values: { weekdays: number[]; duration: string }) => {
+  const handleSubmit = async (values: RecurrenceFormValues) => {
     try {
       const startDate = new Date();
       startDate.setHours(0, 0, 0, 0);
