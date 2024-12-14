@@ -5,6 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { CalendarView } from "./CalendarView";
 import { Project, ScheduledProject } from "@/types/calendar";
 
+// Définir un ID utilisateur par défaut
+const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000000";
+
 export function CalendarContainer() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"month" | "week" | "twoWeeks">("month");
@@ -70,7 +73,7 @@ export function CalendarContainer() {
         .insert([{
           project_id: project.id,
           schedule_date: scheduleDate.toISOString().split('T')[0],
-          user_id: (await supabase.auth.getUser()).data.user?.id
+          user_id: DEFAULT_USER_ID // Utiliser l'ID utilisateur par défaut
         }]);
 
       if (error) throw error;
@@ -119,7 +122,7 @@ export function CalendarContainer() {
         .from('scheduled_projects')
         .update({ 
           completed: !currentProject?.completed,
-          user_id: (await supabase.auth.getUser()).data.user?.id 
+          user_id: DEFAULT_USER_ID // Utiliser l'ID utilisateur par défaut
         })
         .eq('id', scheduleId);
 
@@ -141,7 +144,7 @@ export function CalendarContainer() {
         .from('scheduled_projects')
         .update({ 
           time: time,
-          user_id: (await supabase.auth.getUser()).data.user?.id 
+          user_id: DEFAULT_USER_ID // Utiliser l'ID utilisateur par défaut
         })
         .eq('id', scheduleId);
 
