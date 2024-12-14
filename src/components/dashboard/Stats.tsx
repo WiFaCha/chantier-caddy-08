@@ -83,7 +83,7 @@ export function Stats() {
   };
 
   const isWindowCleaningMonth = (project: ScheduledProject) => {
-    if (!project.window_cleaning) return false;
+    if (!project?.window_cleaning) return false;
     const currentMonth = (project.date.getMonth() + 1).toString();
     return project.window_cleaning.includes(currentMonth);
   };
