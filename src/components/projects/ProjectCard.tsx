@@ -13,12 +13,12 @@ interface ProjectCardProps {
   details?: string;
   color: "violet" | "blue" | "green" | "red" | "purple" | "pink" | "orange" | "ocean";
   type: "Mensuel" | "Ponctuel";
-  windowCleaning?: string[];
+  window_cleaning?: string[];
   onUpdate: (data: Omit<Project, "id">) => void;
   onDelete: () => void;
 }
 
-export function ProjectCard({ id, title, address, price, details, color, type, windowCleaning, onUpdate, onDelete }: ProjectCardProps) {
+export function ProjectCard({ id, title, address, price, details, color, type, window_cleaning, onUpdate, onDelete }: ProjectCardProps) {
   const borderColor = {
     violet: "border-violet-500",
     blue: "border-blue-500",
@@ -56,7 +56,7 @@ export function ProjectCard({ id, title, address, price, details, color, type, w
         </div>
         <div className="flex items-center space-x-1">
           <RecurrenceDialog
-            project={{ id, title, address, price, details, color, type, windowCleaning }}
+            project={{ id, title, address, price, details, color, type, window_cleaning }}
             trigger={
               <Button variant="ghost" size="icon">
                 <RotateCw className="h-4 w-4" />
@@ -64,7 +64,7 @@ export function ProjectCard({ id, title, address, price, details, color, type, w
             }
           />
           <ProjectDialog
-            project={{ title, address, price, details, color, type, windowCleaning }}
+            project={{ title, address, price, details, color, type, window_cleaning }}
             onSubmit={onUpdate}
             trigger={
               <Button variant="ghost" size="icon">
@@ -82,11 +82,11 @@ export function ProjectCard({ id, title, address, price, details, color, type, w
           <div className="flex justify-between">
             <div className="text-2xl font-bold">{price.toFixed(2)} €</div>
           </div>
-          {windowCleaning && windowCleaning.length > 0 && (
+          {window_cleaning && window_cleaning.length > 0 && (
             <div className="text-sm">
               <div className="font-medium mb-1">Nettoyage des vitres :</div>
               <div className="flex flex-wrap gap-1">
-                {windowCleaning.map((monthIndex) => (
+                {window_cleaning.map((monthIndex) => (
                   <span key={monthIndex} className="bg-gray-100 px-2 py-1 rounded-md">
                     {months[parseInt(monthIndex) - 1]}
                   </span>

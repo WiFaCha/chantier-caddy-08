@@ -7,7 +7,7 @@ export interface Project {
   color: "violet" | "blue" | "green" | "red" | "purple" | "pink" | "orange" | "ocean";
   type: "Mensuel" | "Ponctuel";
   user_id?: string;
-  windowCleaning?: string[];
+  window_cleaning?: string[];
 }
 
 export interface ScheduledProject extends Project {
