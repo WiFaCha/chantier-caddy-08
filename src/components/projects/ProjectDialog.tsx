@@ -16,7 +16,7 @@ const formSchema = z.object({
   details: z.string().optional(),
   color: z.enum(["violet", "blue", "green", "red", "purple", "pink", "orange", "ocean"]),
   type: z.enum(["Mensuel", "Ponctuel"]),
-  window_cleaning: z.array(z.string()).optional(),
+  window_cleaning: z.array(z.string()).default([]),
 });
 
 type ProjectFormValues = z.infer<typeof formSchema>;
@@ -37,14 +37,14 @@ const months = [
 export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }: ProjectDialogProps) {
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: project || {
-      title: "",
-      address: "",
-      price: 0,
-      details: "",
-      color: "violet",
-      type: "Mensuel",
-      window_cleaning: [],
+    defaultValues: {
+      title: project?.title || "",
+      address: project?.address || "",
+      price: project?.price || 0,
+      details: project?.details || "",
+      color: project?.color || "violet",
+      type: project?.type || "Mensuel",
+      window_cleaning: project?.window_cleaning || [],
     },
   });
 
@@ -158,7 +158,7 @@ export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }
                   <ToggleGroup 
                     type="multiple" 
                     className="flex flex-wrap gap-2"
-                    value={field.value}
+                    value={field.value || []}
                     onValueChange={field.onChange}
                   >
                     {months.map((month, index) => (
