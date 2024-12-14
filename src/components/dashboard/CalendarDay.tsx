@@ -32,12 +32,14 @@ export function CalendarDay({
   onTimeChange
 }: CalendarDayProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState<'morning' | 'afternoon'>('morning');
   const isMobile = useIsMobile();
   const date = new Date(year, month, day);
   const isToday = new Date().toDateString() === date.toDateString();
 
   const handleAddProject = (project: Project) => {
-    onAddProject(day, project);
+    const defaultTime = selectedPeriod === 'morning' ? '09:00' : '14:00';
+    onAddProject(day, { ...project, time: defaultTime });
     setIsDialogOpen(false);
   };
 
@@ -63,7 +65,39 @@ export function CalendarDay({
             <DayHeader date={date} isMobile={isMobile} />
             <div className="space-y-2 flex-1 overflow-y-auto">
               <div className="relative">
-                <div className="text-xs font-medium text-muted-foreground mb-2">Matin</div>
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-medium text-muted-foreground mb-2">Matin</div>
+                  <Dialog open={isDialogOpen && selectedPeriod === 'morning'} onOpenChange={(open) => {
+                    setIsDialogOpen(open);
+                    if (open) setSelectedPeriod('morning');
+                  }}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        className="h-6 px-2 text-xs"
+                      >
+                        +
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-sm">
+                      <DialogHeader>
+                        <DialogTitle>Ajouter un chantier (Matin)</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                        {catalogProjects.map((project) => (
+                          <Button
+                            key={project.id}
+                            variant="ghost"
+                            className="w-full justify-start"
+                            onClick={() => handleAddProject(project)}
+                          >
+                            {project.title}
+                          </Button>
+                        ))}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
                 <div className="space-y-2">
                   {morningProjects.map((project, index) => (
                     <ProjectItem
@@ -78,7 +112,39 @@ export function CalendarDay({
                   ))}
                 </div>
                 <div className="my-3 border-t border-border" />
-                <div className="text-xs font-medium text-muted-foreground mb-2">Après-midi</div>
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-medium text-muted-foreground mb-2">Après-midi</div>
+                  <Dialog open={isDialogOpen && selectedPeriod === 'afternoon'} onOpenChange={(open) => {
+                    setIsDialogOpen(open);
+                    if (open) setSelectedPeriod('afternoon');
+                  }}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        className="h-6 px-2 text-xs"
+                      >
+                        +
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-sm">
+                      <DialogHeader>
+                        <DialogTitle>Ajouter un chantier (Après-midi)</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                        {catalogProjects.map((project) => (
+                          <Button
+                            key={project.id}
+                            variant="ghost"
+                            className="w-full justify-start"
+                            onClick={() => handleAddProject(project)}
+                          >
+                            {project.title}
+                          </Button>
+                        ))}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
                 <div className="space-y-2">
                   {afternoonProjects.map((project, index) => (
                     <ProjectItem
@@ -95,33 +161,6 @@ export function CalendarDay({
               </div>
               {provided.placeholder}
             </div>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-start text-left text-sm p-2 mt-2"
-                >
-                  + Ajouter
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-sm">
-                <DialogHeader>
-                  <DialogTitle>Ajouter un chantier</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-2 max-h-[60vh] overflow-y-auto">
-                  {catalogProjects.map((project) => (
-                    <Button
-                      key={project.id}
-                      variant="ghost"
-                      className="w-full justify-start"
-                      onClick={() => handleAddProject(project)}
-                    >
-                      {project.title}
-                    </Button>
-                  ))}
-                </div>
-              </DialogContent>
-            </Dialog>
           </div>
         </Card>
       )}
