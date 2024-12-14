@@ -41,6 +41,16 @@ export function CalendarDay({
     setIsDialogOpen(false);
   };
 
+  const morningProjects = projects.filter(p => {
+    const time = p.time ? parseInt(p.time.split(':')[0]) : 12;
+    return time < 12;
+  });
+
+  const afternoonProjects = projects.filter(p => {
+    const time = p.time ? parseInt(p.time.split(':')[0]) : 12;
+    return time >= 12;
+  });
+
   return (
     <Droppable droppableId={String(day)}>
       {(provided) => (
@@ -52,17 +62,37 @@ export function CalendarDay({
           <div className="flex flex-col h-full">
             <DayHeader date={date} isMobile={isMobile} />
             <div className="space-y-2 flex-1 overflow-y-auto">
-              {projects.map((project, index) => (
-                <ProjectItem
-                  key={project.scheduleId}
-                  project={project}
-                  index={index}
-                  isMobile={isMobile}
-                  onToggleComplete={onToggleComplete}
-                  onDeleteProject={onDeleteProject}
-                  onTimeChange={onTimeChange}
-                />
-              ))}
+              <div className="relative">
+                <div className="text-xs font-medium text-muted-foreground mb-2">Matin</div>
+                <div className="space-y-2">
+                  {morningProjects.map((project, index) => (
+                    <ProjectItem
+                      key={project.scheduleId}
+                      project={project}
+                      index={index}
+                      isMobile={isMobile}
+                      onToggleComplete={onToggleComplete}
+                      onDeleteProject={onDeleteProject}
+                      onTimeChange={onTimeChange}
+                    />
+                  ))}
+                </div>
+                <div className="my-3 border-t border-border" />
+                <div className="text-xs font-medium text-muted-foreground mb-2">Après-midi</div>
+                <div className="space-y-2">
+                  {afternoonProjects.map((project, index) => (
+                    <ProjectItem
+                      key={project.scheduleId}
+                      project={project}
+                      index={index + morningProjects.length}
+                      isMobile={isMobile}
+                      onToggleComplete={onToggleComplete}
+                      onDeleteProject={onDeleteProject}
+                      onTimeChange={onTimeChange}
+                    />
+                  ))}
+                </div>
+              </div>
               {provided.placeholder}
             </div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
