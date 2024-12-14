@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash, Spray } from "lucide-react";
+import { Trash, SprayCan } from "lucide-react";
 import { Draggable } from "react-beautiful-dnd";
 import { ScheduledProject } from "@/types/calendar";
 import { TimeSelector } from "../../calendar/TimeSelector";
@@ -66,7 +66,7 @@ export function ProjectItem({
               </span>
               {isWindowCleaningMonth() && (
                 <span className="text-xs flex items-center gap-1 opacity-80">
-                  <Spray className="h-3 w-3" />
+                  <SprayCan className="h-3 w-3" />
                   Vitres
                 </span>
               )}
