@@ -8,6 +8,7 @@ export interface Project {
   type: "Mensuel" | "Ponctuel";
   user_id?: string;
   window_cleaning?: string[];
+  time?: string;
 }
 
 export interface ScheduledProject extends Project {
