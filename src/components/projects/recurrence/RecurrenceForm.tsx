@@ -84,11 +84,22 @@ export function RecurrenceForm({ form, onSubmit }: RecurrenceFormProps) {
                   <Calendar
                     mode="single"
                     selected={field.value}
-                    onSelect={field.onChange}
+                    onSelect={(date) => {
+                      if (date) {
+                        const utcDate = new Date(Date.UTC(
+                          date.getFullYear(),
+                          date.getMonth(),
+                          date.getDate(),
+                          0, 0, 0, 0
+                        ));
+                        field.onChange(utcDate);
+                      }
+                    }}
                     disabled={(date) =>
                       date < new Date() || date < new Date("1900-01-01")
                     }
                     initialFocus
+                    locale={fr}
                   />
                 </PopoverContent>
               </Popover>
