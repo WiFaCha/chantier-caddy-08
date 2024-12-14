@@ -1,11 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { format, isValid } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { UseFormReturn } from "react-hook-form";
 import { RecurrenceFormValues } from "./types";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { CalendarIcon } from "lucide-react";
 
 interface RecurrenceFormProps {
   form: UseFormReturn<RecurrenceFormValues>;
@@ -56,29 +59,39 @@ export function RecurrenceForm({ form, onSubmit }: RecurrenceFormProps) {
           control={form.control}
           name="endDate"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Date de fin (jj/mm/aaaa)</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="jj/mm/aaaa"
-                  value={field.value ? format(new Date(field.value), 'dd/MM/yyyy') : ''}
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      const [day, month, year] = e.target.value.split('/').map(Number);
-                      const date = new Date(year, month - 1, day);
-                      if (isValid(date)) {
-                        field.onChange(date);
-                      }
-                    } else {
-                      field.onChange(undefined);
+            <FormItem className="flex flex-col">
+              <FormLabel>Date de fin</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full pl-3 text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value ? (
+                        format(field.value, "P", { locale: fr })
+                      ) : (
+                        <span>Sélectionner une date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    disabled={(date) =>
+                      date < new Date(new Date().setHours(0, 0, 0, 0))
                     }
-                  }}
-                  className={cn(
-                    "w-full",
-                    !field.value && "text-muted-foreground"
-                  )}
-                />
-              </FormControl>
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </FormItem>
           )}
         />
