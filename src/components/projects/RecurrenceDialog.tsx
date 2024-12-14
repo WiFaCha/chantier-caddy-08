@@ -19,7 +19,6 @@ export function RecurrenceDialog({ project, trigger }: RecurrenceDialogProps) {
     resolver: zodResolver(recurrenceFormSchema),
     defaultValues: {
       weekdays: [],
-      endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
     },
   });
 

@@ -1,18 +1,7 @@
-import { Button } from "@/components/ui/button";
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Calendar, LogOut } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import { LayoutDashboard, Calendar } from "lucide-react";
 
 export function TopNav() {
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    // TODO: Implement actual logout logic
-    toast.success("Déconnexion réussie");
-    navigate("/login");
-  };
-
   return (
     <nav className="border-b bg-white sticky top-0 z-50">
       <div className="container mx-auto">
@@ -44,14 +33,6 @@ export function TopNav() {
               </NavLink>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            className="text-gray-500 hover:text-primary p-2"
-            onClick={handleLogout}
-            title="Se déconnecter"
-          >
-            <LogOut className="h-5 w-5" />
-          </Button>
         </div>
       </div>
     </nav>
