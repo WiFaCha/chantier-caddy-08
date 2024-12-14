@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { Project } from "@/types/calendar";
 import { RecurrenceForm } from "./recurrence/RecurrenceForm";
-import { recurrenceFormSchema } from "./recurrence/types";
+import { RecurrenceFormValues, recurrenceFormSchema } from "./recurrence/types";
 import { useRecurrenceSubmit } from "./recurrence/useRecurrenceSubmit";
 
 interface RecurrenceDialogProps {
@@ -15,7 +15,7 @@ interface RecurrenceDialogProps {
 export function RecurrenceDialog({ project, trigger }: RecurrenceDialogProps) {
   const [open, setOpen] = useState(false);
 
-  const form = useForm({
+  const form = useForm<RecurrenceFormValues>({
     resolver: zodResolver(recurrenceFormSchema),
     defaultValues: {
       weekdays: [],
