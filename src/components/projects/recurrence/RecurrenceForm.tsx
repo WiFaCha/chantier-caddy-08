@@ -1,64 +1,42 @@
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-import { CalendarIcon } from "lucide-react";
-import { UseFormReturn } from "react-hook-form";
-import { RecurrenceFormValues } from "./types";
+import { useForm } from "react-hook-form";
+import { RecurrenceFormValues, recurrenceFormSchema } from "./types";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 interface RecurrenceFormProps {
-  form: UseFormReturn<RecurrenceFormValues>;
   onSubmit: (values: RecurrenceFormValues) => void;
 }
 
-export function RecurrenceForm({ form, onSubmit }: RecurrenceFormProps) {
+export function RecurrenceForm({ onSubmit }: RecurrenceFormProps) {
+  const form = useForm<RecurrenceFormValues>({
+    resolver: zodResolver(recurrenceFormSchema),
+    defaultValues: {
+      weekdays: [],
+      duration: "1week",
+    },
+  });
+
+  const weekdays = [
+    { value: 1, label: "Lun" },
+    { value: 2, label: "Mar" },
+    { value: 3, label: "Mer" },
+    { value: 4, label: "Jeu" },
+    { value: 5, label: "Ven" },
+    { value: 6, label: "Sam" },
+    { value: 0, label: "Dim" },
+  ];
+
+  const durations = [
+    { value: "1week" as const, label: "1 semaine" },
+    { value: "2weeks" as const, label: "2 semaines" },
+    { value: "1month" as const, label: "1 mois" },
+    { value: "3months" as const, label: "3 mois" },
+  ];
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="endDate"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Date de fin</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP", { locale: fr })
-                      ) : (
-                        <span>Sélectionner une date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    disabled={(date) =>
-                      date < new Date() || date < new Date("1900-01-01")
-                    }
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </FormItem>
-          )}
-        />
-
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="weekdays"
@@ -66,15 +44,7 @@ export function RecurrenceForm({ form, onSubmit }: RecurrenceFormProps) {
             <FormItem>
               <FormLabel>Jours de la semaine</FormLabel>
               <div className="flex flex-wrap gap-2">
-                {[
-                  { value: 1, label: "Lun" },
-                  { value: 2, label: "Mar" },
-                  { value: 3, label: "Mer" },
-                  { value: 4, label: "Jeu" },
-                  { value: 5, label: "Ven" },
-                  { value: 6, label: "Sam" },
-                  { value: 0, label: "Dim" },
-                ].map((day) => (
+                {weekdays.map((day) => (
                   <Button
                     key={day.value}
                     type="button"
@@ -89,6 +59,28 @@ export function RecurrenceForm({ form, onSubmit }: RecurrenceFormProps) {
                     }}
                   >
                     {day.label}
+                  </Button>
+                ))}
+              </div>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="duration"
+          render={() => (
+            <FormItem>
+              <FormLabel>Durée</FormLabel>
+              <div className="flex flex-wrap gap-2">
+                {durations.map((duration) => (
+                  <Button
+                    key={duration.value}
+                    type="button"
+                    variant={form.watch("duration") === duration.value ? "default" : "outline"}
+                    onClick={() => form.setValue("duration", duration.value)}
+                  >
+                    {duration.label}
                   </Button>
                 ))}
               </div>
