@@ -4,7 +4,7 @@ export interface Project {
   address: string;
   price: number;
   details?: string;
-  color: "violet" | "blue" | "green" | "red" | "purple" | "pink" | "orange" | "ocean";
+  color: "violet" | "blue" | "green" | "red";
   type: "Mensuel" | "Ponctuel";
   user_id?: string;
   window_cleaning?: string[];

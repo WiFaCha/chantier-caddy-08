@@ -32,7 +32,7 @@ export function ProjectList() {
     },
   });
 
-  const handleCreateProject = async (data: Omit<Project, "id">) => {
+  const handleCreateProject = async (data: Omit<Project, "id" | "user_id">) => {
     try {
       const { error } = await supabase
         .from('projects')
@@ -58,7 +58,7 @@ export function ProjectList() {
     }
   };
 
-  const handleUpdateProject = async (id: string, data: Omit<Project, "id">) => {
+  const handleUpdateProject = async (id: string, data: Omit<Project, "id" | "user_id">) => {
     try {
       const { error } = await supabase
         .from('projects')

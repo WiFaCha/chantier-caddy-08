@@ -5,16 +5,9 @@ import { ProjectDialog } from "./ProjectDialog";
 import { RecurrenceDialog } from "./RecurrenceDialog";
 import { Project } from "@/types/calendar";
 
-interface ProjectCardProps {
+interface ProjectCardProps extends Omit<Project, 'id' | 'user_id'> {
   id: string;
-  title: string;
-  address: string;
-  price: number;
-  details?: string;
-  color: "violet" | "blue" | "green" | "red" | "purple" | "pink" | "orange" | "ocean";
-  type: "Mensuel" | "Ponctuel";
-  window_cleaning?: string[];
-  onUpdate: (data: Omit<Project, "id">) => void;
+  onUpdate: (data: Omit<Project, "id" | "user_id">) => void;
   onDelete: () => void;
 }
 
@@ -23,11 +16,7 @@ export function ProjectCard({ id, title, address, price, details, color, type, w
     violet: "border-violet-500",
     blue: "border-blue-500",
     green: "border-green-500",
-    red: "border-red-500",
-    purple: "border-[#8B5CF6]",
-    pink: "border-[#D946EF]",
-    orange: "border-[#F97316]",
-    ocean: "border-[#0EA5E9]",
+    red: "border-red-500"
   }[color];
 
   const handleAddressClick = () => {
