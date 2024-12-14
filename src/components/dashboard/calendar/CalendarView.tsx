@@ -8,6 +8,8 @@ import { getDaysToDisplay } from "@/utils/calendarUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
+import { ProjectFilter } from "./ProjectFilter";
+import { useState } from "react";
 
 interface CalendarViewProps {
   currentDate: Date;
@@ -37,6 +39,7 @@ export function CalendarView({
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
 
   const handleDragEnd = async (result: DropResult) => {
     if (!result.destination) return;
@@ -71,7 +74,32 @@ export function CalendarView({
     }
   };
 
+  const handleToggleProject = (projectId: string) => {
+    setSelectedProjects(prev => 
+      prev.includes(projectId)
+        ? prev.filter(id => id !== projectId)
+        : [...prev, projectId]
+    );
+  };
+
+  const filteredScheduledProjects = selectedProjects.length > 0
+    ? scheduledProjects.filter(sp => selectedProjects.includes(sp.id))
+    : scheduledProjects;
+
   const days = getDaysToDisplay(currentDate, viewMode, isMobile);
+
+  // Filtrer les jours pour n'afficher que ceux avec des projets sélectionnés
+  const filteredDays = selectedProjects.length > 0
+    ? days.filter(day => {
+        if (!day) return false;
+        return filteredScheduledProjects.some(sp => {
+          const spDate = new Date(sp.date);
+          return spDate.getDate() === day.getDate() &&
+                 spDate.getMonth() === day.getMonth() &&
+                 spDate.getFullYear() === day.getFullYear();
+        });
+      })
+    : days;
 
   return (
     <Card className="col-span-4 w-full">
@@ -104,11 +132,16 @@ export function CalendarView({
         />
       </CardHeader>
       <CardContent className={`${isMobile ? 'px-2' : 'px-6'}`}>
+        <ProjectFilter
+          projects={projects}
+          selectedProjects={selectedProjects}
+          onToggleProject={handleToggleProject}
+        />
         <DragDropContext onDragEnd={handleDragEnd}>
           <CalendarGrid
-            days={days}
+            days={filteredDays}
             projects={projects}
-            scheduledProjects={scheduledProjects}
+            scheduledProjects={filteredScheduledProjects}
             onAddProject={onAddProject}
             onDeleteProject={onDeleteProject}
             onToggleComplete={onToggleComplete}
