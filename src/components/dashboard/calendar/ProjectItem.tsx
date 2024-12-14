@@ -55,21 +55,24 @@ export function ProjectItem({
               onCheckedChange={() => onToggleComplete(project.scheduleId)}
               className="h-4 w-4 bg-white/20 border-white/40 data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
             />
-            <div className="truncate flex flex-col">
+            <div className="truncate flex flex-col gap-1">
               <span className="truncate">
                 {project.title}
+              </span>
+              <div className="flex items-center gap-2">
                 {project.time && (
-                  <span className="ml-2 text-xs opacity-80">
+                  <span className="text-xs flex items-center gap-1 opacity-80">
+                    <div className="w-2 h-2 rounded-full bg-green-300"></div>
                     {project.time}
                   </span>
                 )}
-              </span>
-              {isWindowCleaningMonth() && (
-                <span className="text-xs flex items-center gap-1 opacity-80">
-                  <div className="w-2 h-2 rounded-full bg-blue-300"></div>
-                  Vitres
-                </span>
-              )}
+                {isWindowCleaningMonth() && (
+                  <span className="text-xs flex items-center gap-1 opacity-80">
+                    <div className="w-2 h-2 rounded-full bg-blue-300"></div>
+                    Vitres
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-1">
