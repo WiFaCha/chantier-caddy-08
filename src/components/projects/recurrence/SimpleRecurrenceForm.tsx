@@ -6,7 +6,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const simpleRecurrenceSchema = z.object({
-  numberOfDays: z.string().transform((val) => parseInt(val, 10)),
+  numberOfDays: z.number().min(1, "Le nombre de jours doit être supérieur à 0"),
 });
 
 type SimpleRecurrenceValues = z.infer<typeof simpleRecurrenceSchema>;
@@ -19,7 +19,7 @@ export function SimpleRecurrenceForm({ onSubmit }: SimpleRecurrenceFormProps) {
   const form = useForm<SimpleRecurrenceValues>({
     resolver: zodResolver(simpleRecurrenceSchema),
     defaultValues: {
-      numberOfDays: "1",
+      numberOfDays: 1,
     },
   });
 
@@ -33,7 +33,12 @@ export function SimpleRecurrenceForm({ onSubmit }: SimpleRecurrenceFormProps) {
             <FormItem>
               <FormLabel>Nombre de jours consécutifs</FormLabel>
               <FormControl>
-                <Input type="number" min="1" {...field} />
+                <Input 
+                  type="number" 
+                  min="1" 
+                  {...field}
+                  onChange={(e) => field.onChange(Number(e.target.value))}
+                />
               </FormControl>
             </FormItem>
           )}
