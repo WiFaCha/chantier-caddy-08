@@ -16,7 +16,7 @@ const formSchema = z.object({
   details: z.string().optional(),
   color: z.enum(["violet", "blue", "green", "red", "purple", "pink", "orange", "ocean"]),
   type: z.enum(["Mensuel", "Ponctuel"]),
-  windowCleaning: z.array(z.string()).optional(),
+  window_cleaning: z.array(z.string()).optional(),
 });
 
 type ProjectFormValues = z.infer<typeof formSchema>;
@@ -44,7 +44,7 @@ export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }
       details: "",
       color: "violet",
       type: "Mensuel",
-      windowCleaning: [],
+      window_cleaning: [],
     },
   });
 
@@ -151,7 +151,7 @@ export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }
             />
             <FormField
               control={form.control}
-              name="windowCleaning"
+              name="window_cleaning"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Nettoyage des vitres</FormLabel>
