@@ -36,6 +36,7 @@ export function TimeSelector({ scheduleId, currentTime, onTimeChange }: TimeSele
       <PopoverContent className="w-auto p-2">
         <Input
           type="time"
+          step="900"
           value={time}
           onChange={(e) => handleTimeChange(e.target.value)}
           className="w-32"

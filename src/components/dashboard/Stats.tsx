@@ -55,7 +55,6 @@ export function Stats() {
     }
   };
 
-  // Set up real-time subscription
   useEffect(() => {
     const scheduledProjectsSubscription = supabase
       .channel('scheduled_projects_changes')
@@ -83,14 +82,19 @@ export function Stats() {
     }
   };
 
+  const isWindowCleaningMonth = (project: ScheduledProject) => {
+    if (!project.window_cleaning) return false;
+    const currentMonth = (project.date.getMonth() + 1).toString();
+    return project.window_cleaning.includes(currentMonth);
+  };
+
   const todayProjects = scheduledProjects.filter((project: ScheduledProject) => {
     if (!project.date) return false;
     const today = new Date();
-    const projectDate = new Date(project.date);
     return (
-      projectDate.getDate() === today.getDate() &&
-      projectDate.getMonth() === today.getMonth() &&
-      projectDate.getFullYear() === today.getFullYear()
+      project.date.getDate() === today.getDate() &&
+      project.date.getMonth() === today.getMonth() &&
+      project.date.getFullYear() === today.getFullYear()
     );
   });
 
@@ -133,12 +137,20 @@ export function Stats() {
                       {project.address}
                     </button>
                   )}
-                  {project.time && (
-                    <div className="flex items-center text-sm mt-1">
-                      <Clock className="mr-1 h-4 w-4" />
-                      {project.time}
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2 mt-1">
+                    {project.time && (
+                      <div className="flex items-center text-sm">
+                        <Clock className="mr-1 h-4 w-4" />
+                        {project.time}
+                      </div>
+                    )}
+                    {isWindowCleaningMonth(project) && (
+                      <div className="flex items-center text-sm">
+                        <div className="w-2 h-2 rounded-full bg-blue-500 mr-1" />
+                        Vitres
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

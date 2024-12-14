@@ -44,61 +44,63 @@ export function CalendarDay({
   };
 
   const morningProjects = projects.filter(p => {
-    const time = p.time ? parseInt(p.time.split(':')[0]) : 12;
+    const time = p.time ? parseInt(p.time.split(':')[0]) : 0;
     return time < 12;
   });
 
   const afternoonProjects = projects.filter(p => {
-    const time = p.time ? parseInt(p.time.split(':')[0]) : 12;
+    const time = p.time ? parseInt(p.time.split(':')[0]) : 0;
     return time >= 12;
   });
 
   return (
-    <Droppable droppableId={String(day)}>
-      {(provided) => (
-        <Card 
-          className={`h-full w-full p-4 ${isToday ? 'border-primary border-2' : ''}`}
-          ref={provided.innerRef}
-          {...provided.droppableProps}
-        >
-          <div className="flex flex-col h-full">
-            <DayHeader date={date} isMobile={isMobile} />
-            <div className="space-y-2 flex-1 overflow-y-auto">
-              <div className="relative">
-                <div className="flex items-center justify-between">
-                  <div className="text-xs font-medium text-muted-foreground mb-2">Matin</div>
-                  <Dialog open={isDialogOpen && selectedPeriod === 'morning'} onOpenChange={(open) => {
-                    setIsDialogOpen(open);
-                    if (open) setSelectedPeriod('morning');
-                  }}>
-                    <DialogTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        className="h-6 px-2 text-xs"
+    <Card 
+      className={`h-full w-full p-4 ${isToday ? 'border-primary border-2' : ''}`}
+    >
+      <div className="flex flex-col h-full">
+        <DayHeader date={date} isMobile={isMobile} />
+        <div className="space-y-2 flex-1 overflow-y-auto">
+          <div className="relative">
+            <div className="flex items-center justify-between">
+              <div className="text-xs font-medium text-muted-foreground mb-2">Matin</div>
+              <Dialog open={isDialogOpen && selectedPeriod === 'morning'} onOpenChange={(open) => {
+                setIsDialogOpen(open);
+                if (open) setSelectedPeriod('morning');
+              }}>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    className="h-6 px-2 text-xs"
+                  >
+                    +
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-sm">
+                  <DialogHeader>
+                    <DialogTitle>Ajouter un chantier (Matin)</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                    {catalogProjects.map((project) => (
+                      <Button
+                        key={project.id}
+                        variant="ghost"
+                        className="w-full justify-start"
+                        onClick={() => handleAddProject(project)}
                       >
-                        +
+                        {project.title}
                       </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-sm">
-                      <DialogHeader>
-                        <DialogTitle>Ajouter un chantier (Matin)</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-2 max-h-[60vh] overflow-y-auto">
-                        {catalogProjects.map((project) => (
-                          <Button
-                            key={project.id}
-                            variant="ghost"
-                            className="w-full justify-start"
-                            onClick={() => handleAddProject(project)}
-                          >
-                            {project.title}
-                          </Button>
-                        ))}
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-                <div className="space-y-2">
+                    ))}
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+            <Droppable droppableId={`${day}-morning`}>
+              {(provided) => (
+                <div 
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  className="space-y-2"
+                >
                   {morningProjects.map((project, index) => (
                     <ProjectItem
                       key={project.scheduleId}
@@ -110,42 +112,51 @@ export function CalendarDay({
                       onTimeChange={onTimeChange}
                     />
                   ))}
+                  {provided.placeholder}
                 </div>
-                <div className="my-3 border-t border-border" />
-                <div className="flex items-center justify-between">
-                  <div className="text-xs font-medium text-muted-foreground mb-2">Après-midi</div>
-                  <Dialog open={isDialogOpen && selectedPeriod === 'afternoon'} onOpenChange={(open) => {
-                    setIsDialogOpen(open);
-                    if (open) setSelectedPeriod('afternoon');
-                  }}>
-                    <DialogTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        className="h-6 px-2 text-xs"
+              )}
+            </Droppable>
+            <div className="my-3 border-t border-border" />
+            <div className="flex items-center justify-between">
+              <div className="text-xs font-medium text-muted-foreground mb-2">Après-midi</div>
+              <Dialog open={isDialogOpen && selectedPeriod === 'afternoon'} onOpenChange={(open) => {
+                setIsDialogOpen(open);
+                if (open) setSelectedPeriod('afternoon');
+              }}>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    className="h-6 px-2 text-xs"
+                  >
+                    +
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-sm">
+                  <DialogHeader>
+                    <DialogTitle>Ajouter un chantier (Après-midi)</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                    {catalogProjects.map((project) => (
+                      <Button
+                        key={project.id}
+                        variant="ghost"
+                        className="w-full justify-start"
+                        onClick={() => handleAddProject(project)}
                       >
-                        +
+                        {project.title}
                       </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-sm">
-                      <DialogHeader>
-                        <DialogTitle>Ajouter un chantier (Après-midi)</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-2 max-h-[60vh] overflow-y-auto">
-                        {catalogProjects.map((project) => (
-                          <Button
-                            key={project.id}
-                            variant="ghost"
-                            className="w-full justify-start"
-                            onClick={() => handleAddProject(project)}
-                          >
-                            {project.title}
-                          </Button>
-                        ))}
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-                <div className="space-y-2">
+                    ))}
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+            <Droppable droppableId={`${day}-afternoon`}>
+              {(provided) => (
+                <div 
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  className="space-y-2"
+                >
                   {afternoonProjects.map((project, index) => (
                     <ProjectItem
                       key={project.scheduleId}
@@ -157,13 +168,13 @@ export function CalendarDay({
                       onTimeChange={onTimeChange}
                     />
                   ))}
+                  {provided.placeholder}
                 </div>
-              </div>
-              {provided.placeholder}
-            </div>
+              )}
+            </Droppable>
           </div>
-        </Card>
-      )}
-    </Droppable>
+        </div>
+      </div>
+    </Card>
   );
 }
