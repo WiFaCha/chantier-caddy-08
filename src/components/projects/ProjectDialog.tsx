@@ -7,14 +7,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const formSchema = z.object({
   title: z.string().min(1, "Le nom est requis"),
   address: z.string(),
   price: z.number().min(0, "Le prix doit être positif"),
   details: z.string().optional(),
-  color: z.enum(["violet", "blue", "green", "red"]),
+  color: z.enum(["violet", "blue", "green", "red", "purple", "pink", "orange", "ocean"]),
   type: z.enum(["Mensuel", "Ponctuel"]),
+  windowCleaning: z.array(z.string()).optional(),
 });
 
 type ProjectFormValues = z.infer<typeof formSchema>;
@@ -27,6 +29,11 @@ interface ProjectDialogProps {
   onOpenChange?: (open: boolean) => void;
 }
 
+const months = [
+  "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+  "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+];
+
 export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }: ProjectDialogProps) {
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(formSchema),
@@ -37,6 +44,7 @@ export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }
       details: "",
       color: "violet",
       type: "Mensuel",
+      windowCleaning: [],
     },
   });
 
@@ -119,18 +127,50 @@ export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Couleur</FormLabel>
-                  <div className="flex gap-2">
-                    {["violet", "blue", "green", "red"].map((color) => (
+                  <div className="flex gap-2 flex-wrap">
+                    {["violet", "blue", "green", "red", "purple", "pink", "orange", "ocean"].map((color) => (
                       <button
                         key={color}
                         type="button"
                         className={`h-8 w-8 rounded-full ${
-                          color === "violet" ? "bg-violet-500" : color === "blue" ? "bg-blue-500" : color === "green" ? "bg-green-500" : "bg-red-500"
+                          color === "violet" ? "bg-violet-500" :
+                          color === "blue" ? "bg-blue-500" :
+                          color === "green" ? "bg-green-500" :
+                          color === "red" ? "bg-red-500" :
+                          color === "purple" ? "bg-[#8B5CF6]" :
+                          color === "pink" ? "bg-[#D946EF]" :
+                          color === "orange" ? "bg-[#F97316]" :
+                          "bg-[#0EA5E9]"
                         } ${field.value === color ? "ring-2 ring-offset-2" : ""}`}
                         onClick={() => field.onChange(color)}
                       />
                     ))}
                   </div>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="windowCleaning"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nettoyage des vitres</FormLabel>
+                  <ToggleGroup 
+                    type="multiple" 
+                    className="flex flex-wrap gap-2"
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  >
+                    {months.map((month, index) => (
+                      <ToggleGroupItem
+                        key={month}
+                        value={String(index + 1)}
+                        className="flex-1 min-w-[calc(25%-0.5rem)]"
+                      >
+                        {month}
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
                 </FormItem>
               )}
             />

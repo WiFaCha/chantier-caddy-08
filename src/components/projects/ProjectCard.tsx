@@ -11,18 +11,23 @@ interface ProjectCardProps {
   address: string;
   price: number;
   details?: string;
-  color: "violet" | "blue" | "green" | "red";
+  color: "violet" | "blue" | "green" | "red" | "purple" | "pink" | "orange" | "ocean";
   type: "Mensuel" | "Ponctuel";
+  windowCleaning?: string[];
   onUpdate: (data: Omit<Project, "id">) => void;
   onDelete: () => void;
 }
 
-export function ProjectCard({ id, title, address, price, details, color, type, onUpdate, onDelete }: ProjectCardProps) {
+export function ProjectCard({ id, title, address, price, details, color, type, windowCleaning, onUpdate, onDelete }: ProjectCardProps) {
   const borderColor = {
     violet: "border-violet-500",
     blue: "border-blue-500",
     green: "border-green-500",
     red: "border-red-500",
+    purple: "border-[#8B5CF6]",
+    pink: "border-[#D946EF]",
+    orange: "border-[#F97316]",
+    ocean: "border-[#0EA5E9]",
   }[color];
 
   const handleAddressClick = () => {
@@ -30,6 +35,11 @@ export function ProjectCard({ id, title, address, price, details, color, type, o
       window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`, '_blank');
     }
   };
+
+  const months = [
+    "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+    "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+  ];
 
   return (
     <Card className={`relative overflow-hidden border-l-4 ${borderColor}`}>
@@ -46,7 +56,7 @@ export function ProjectCard({ id, title, address, price, details, color, type, o
         </div>
         <div className="flex items-center space-x-1">
           <RecurrenceDialog
-            project={{ id, title, address, price, details, color, type }}
+            project={{ id, title, address, price, details, color, type, windowCleaning }}
             trigger={
               <Button variant="ghost" size="icon">
                 <RotateCw className="h-4 w-4" />
@@ -54,7 +64,7 @@ export function ProjectCard({ id, title, address, price, details, color, type, o
             }
           />
           <ProjectDialog
-            project={{ title, address, price, details, color, type }}
+            project={{ title, address, price, details, color, type, windowCleaning }}
             onSubmit={onUpdate}
             trigger={
               <Button variant="ghost" size="icon">
@@ -68,10 +78,24 @@ export function ProjectCard({ id, title, address, price, details, color, type, o
         </div>
       </CardHeader>
       <CardContent>
-        <div className="flex justify-between">
-          <div className="text-2xl font-bold">{price.toFixed(2)} €</div>
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-between">
+            <div className="text-2xl font-bold">{price.toFixed(2)} €</div>
+          </div>
+          {windowCleaning && windowCleaning.length > 0 && (
+            <div className="text-sm">
+              <div className="font-medium mb-1">Nettoyage des vitres :</div>
+              <div className="flex flex-wrap gap-1">
+                {windowCleaning.map((monthIndex) => (
+                  <span key={monthIndex} className="bg-gray-100 px-2 py-1 rounded-md">
+                    {months[parseInt(monthIndex) - 1]}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {details && <p className="text-sm text-muted-foreground">{details}</p>}
         </div>
-        {details && <p className="mt-2 text-sm text-muted-foreground">{details}</p>}
       </CardContent>
     </Card>
   );

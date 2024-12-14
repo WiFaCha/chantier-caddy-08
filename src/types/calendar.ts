@@ -4,9 +4,10 @@ export interface Project {
   address: string;
   price: number;
   details?: string;
-  color: "violet" | "blue" | "green" | "red";
+  color: "violet" | "blue" | "green" | "red" | "purple" | "pink" | "orange" | "ocean";
   type: "Mensuel" | "Ponctuel";
   user_id?: string;
+  windowCleaning?: string[];
 }
 
 export interface ScheduledProject extends Project {
