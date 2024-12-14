@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { format, parse } from "date-fns";
+import { format, parse, isValid } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { UseFormReturn } from "react-hook-form";
@@ -62,18 +62,20 @@ export function RecurrenceForm({ form, onSubmit }: RecurrenceFormProps) {
               <FormControl>
                 <Input
                   placeholder="jj/mm/aaaa"
-                  value={field.value ? format(field.value, 'dd/MM/yyyy') : ''}
+                  value={field.value && isValid(field.value) ? format(field.value, 'dd/MM/yyyy') : ''}
                   onChange={(e) => {
                     try {
                       if (e.target.value) {
                         const parsedDate = parse(e.target.value, 'dd/MM/yyyy', new Date());
-                        const utcDate = new Date(Date.UTC(
-                          parsedDate.getFullYear(),
-                          parsedDate.getMonth(),
-                          parsedDate.getDate(),
-                          0, 0, 0, 0
-                        ));
-                        field.onChange(utcDate);
+                        if (isValid(parsedDate)) {
+                          const utcDate = new Date(Date.UTC(
+                            parsedDate.getFullYear(),
+                            parsedDate.getMonth(),
+                            parsedDate.getDate(),
+                            0, 0, 0, 0
+                          ));
+                          field.onChange(utcDate);
+                        }
                       } else {
                         field.onChange(undefined);
                       }
