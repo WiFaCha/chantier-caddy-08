@@ -38,20 +38,27 @@ export function CalendarDay({
     return a.time.localeCompare(b.time);
   });
 
+  // Sépare les projets en fonction de leur section (matin/après-midi)
   const morningProjects = sortedProjects.filter(p => {
-    if (!p.time) return false; // Changed this line to return false for unscheduled tasks
+    if (!p.time) return false;
     const time = parseInt(p.time.split(':')[0]);
     return time < 12;
   });
 
   const afternoonProjects = sortedProjects.filter(p => {
-    if (!p.time) return false; // Changed this line to return false for unscheduled tasks
+    if (!p.time) return false;
     const time = parseInt(p.time.split(':')[0]);
     return time >= 12;
   });
 
-  // Unscheduled projects will be shown in the morning section by default
-  const unscheduledProjects = sortedProjects.filter(p => !p.time);
+  // Les projets sans heure seront affichés dans la section où ils ont été déposés
+  const unscheduledMorningProjects = sortedProjects.filter(p => 
+    !p.time && droppableId.includes('morning')
+  );
+
+  const unscheduledAfternoonProjects = sortedProjects.filter(p => 
+    !p.time && droppableId.includes('afternoon')
+  );
 
   const handleAddProject = (period: 'morning' | 'afternoon') => (project: Project) => {
     const defaultTime = period === 'morning' ? '09:00' : '14:00';
@@ -68,7 +75,7 @@ export function CalendarDay({
             <DaySection
               title="Matin"
               droppableId={`${day}-morning`}
-              projects={[...morningProjects, ...unscheduledProjects]}
+              projects={[...morningProjects, ...unscheduledMorningProjects]}
               catalogProjects={catalogProjects}
               isMobile={isMobile}
               onAddProject={handleAddProject('morning')}
@@ -80,7 +87,7 @@ export function CalendarDay({
             <DaySection
               title="Après-midi"
               droppableId={`${day}-afternoon`}
-              projects={afternoonProjects}
+              projects={[...afternoonProjects, ...unscheduledAfternoonProjects]}
               catalogProjects={catalogProjects}
               isMobile={isMobile}
               onAddProject={handleAddProject('afternoon')}
