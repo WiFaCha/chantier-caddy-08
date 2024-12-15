@@ -60,8 +60,8 @@ export function CalendarDay({
   const handleAddProject = (period: 'morning' | 'afternoon') => (project: Project) => {
     const projectWithTime = { 
       ...project, 
-      section: 'morning',  // Toujours définir la section à 'morning' par défaut
-      time: undefined      // Pas d'heure par défaut
+      section: 'morning' as const,  // Using const assertion to ensure correct type
+      time: undefined      
     };
     onAddProject(day, projectWithTime);
   };

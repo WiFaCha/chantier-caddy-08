@@ -5,13 +5,31 @@ import { ProjectDialog } from "./ProjectDialog";
 import { RecurrenceDialog } from "./RecurrenceDialog";
 import { Project } from "@/types/calendar";
 
-interface ProjectCardProps extends Omit<Project, 'id' | 'user_id'> {
+interface ProjectCardProps {
   id: string;
+  title: string;
+  address: string;
+  price: number;
+  details?: string;
+  color: Project['color'];
+  type: "Mensuel" | "Ponctuel";
+  window_cleaning?: string[];
   onUpdate: (data: Omit<Project, "id" | "user_id">) => void;
   onDelete: () => void;
 }
 
-export function ProjectCard({ id, title, address, price, details, color, type, window_cleaning, onUpdate, onDelete }: ProjectCardProps) {
+export function ProjectCard({ 
+  id, 
+  title, 
+  address, 
+  price, 
+  details, 
+  color, 
+  type, 
+  window_cleaning, 
+  onUpdate, 
+  onDelete 
+}: ProjectCardProps) {
   const borderColor = {
     violet: "border-violet-500",
     blue: "border-blue-500",
