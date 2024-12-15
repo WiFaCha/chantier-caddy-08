@@ -30,7 +30,8 @@ export function Stats() {
         scheduleId: sp.id,
         date: new Date(sp.schedule_date),
         completed: sp.completed,
-        time: sp.time
+        time: sp.time,
+        section: sp.section
       })) || [];
     },
   });
@@ -98,6 +99,73 @@ export function Stats() {
     );
   });
 
+  const morningProjects = todayProjects.filter(p => {
+    if (!p.time && !p.section) return true;
+    if (p.section === 'morning') return true;
+    if (!p.time) return false;
+    const time = parseInt(p.time.split(':')[0]);
+    return time < 12;
+  });
+
+  const afternoonProjects = todayProjects.filter(p => {
+    if (p.section === 'afternoon') return true;
+    if (!p.time) return false;
+    const time = parseInt(p.time.split(':')[0]);
+    return time >= 12;
+  });
+
+  const renderProjects = (projects: ScheduledProject[], title: string) => (
+    <div className="space-y-2">
+      <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
+      {projects.map((project: ScheduledProject) => (
+        <div
+          key={project.scheduleId}
+          className={`rounded p-3 flex items-center gap-3 ${
+            project.color === "violet"
+              ? "bg-violet-100 text-violet-900"
+              : project.color === "blue"
+              ? "bg-blue-100 text-blue-900"
+              : project.color === "green"
+              ? "bg-green-100 text-green-900"
+              : "bg-red-100 text-red-900"
+          }`}
+        >
+          <Checkbox
+            checked={project.completed}
+            onCheckedChange={() => handleToggleComplete(project.scheduleId)}
+            className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
+          />
+          <div className="flex-1">
+            <div className="font-medium">{project.title}</div>
+            {project.address && (
+              <button 
+                onClick={() => handleAddressClick(project.address)}
+                className="flex items-center text-sm hover:underline"
+              >
+                <MapPin className="mr-1 h-4 w-4" />
+                Itinéraire
+              </button>
+            )}
+            <div className="flex items-center gap-2 mt-1">
+              {project.time && (
+                <div className="flex items-center text-sm">
+                  <Clock className="mr-1 h-4 w-4" />
+                  {project.time}
+                </div>
+              )}
+              {isWindowCleaningMonth(project) && (
+                <div className="flex items-center text-sm">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mr-1" />
+                  Vitres
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <Card>
       <CardHeader>
@@ -107,53 +175,10 @@ export function Stats() {
         {todayProjects.length === 0 ? (
           <p className="text-muted-foreground">Aucun chantier prévu aujourd'hui</p>
         ) : (
-          <div className="space-y-4">
-            {todayProjects.map((project: ScheduledProject) => (
-              <div
-                key={project.scheduleId}
-                className={`rounded p-3 flex items-center gap-3 ${
-                  project.color === "violet"
-                    ? "bg-violet-100 text-violet-900"
-                    : project.color === "blue"
-                    ? "bg-blue-100 text-blue-900"
-                    : project.color === "green"
-                    ? "bg-green-100 text-green-900"
-                    : "bg-red-100 text-red-900"
-                }`}
-              >
-                <Checkbox
-                  checked={project.completed}
-                  onCheckedChange={() => handleToggleComplete(project.scheduleId)}
-                  className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
-                />
-                <div className="flex-1">
-                  <div className="font-medium">{project.title}</div>
-                  {project.address && (
-                    <button 
-                      onClick={() => handleAddressClick(project.address)}
-                      className="flex items-center text-sm hover:underline"
-                    >
-                      <MapPin className="mr-1 h-4 w-4" />
-                      Itinéraire
-                    </button>
-                  )}
-                  <div className="flex items-center gap-2 mt-1">
-                    {project.time && (
-                      <div className="flex items-center text-sm">
-                        <Clock className="mr-1 h-4 w-4" />
-                        {project.time}
-                      </div>
-                    )}
-                    {isWindowCleaningMonth(project) && (
-                      <div className="flex items-center text-sm">
-                        <div className="w-2 h-2 rounded-full bg-blue-500 mr-1" />
-                        Vitres
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="space-y-6">
+            {renderProjects(morningProjects, "Matin")}
+            <div className="border-t border-border" />
+            {renderProjects(afternoonProjects, "Après-midi")}
           </div>
         )}
       </CardContent>

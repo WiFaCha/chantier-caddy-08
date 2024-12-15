@@ -33,19 +33,22 @@ export function CalendarDay({
 
   const sortedProjects = [...projects].sort((a, b) => {
     if (!a.time && !b.time) return 0;
-    if (!a.time) return -1; // Les projets sans heure apparaissent en premier
+    if (!a.time) return -1;
     if (!b.time) return 1;
     return a.time.localeCompare(b.time);
   });
 
-  // Sépare les projets en fonction de leur section (matin/après-midi)
   const morningProjects = sortedProjects.filter(p => {
-    if (!p.time) return true; // Par défaut, les projets sans heure sont le matin
+    if (p.section === 'morning') return true;
+    if (p.section === 'afternoon') return false;
+    if (!p.time) return true;
     const time = parseInt(p.time.split(':')[0]);
     return time < 12;
   });
 
   const afternoonProjects = sortedProjects.filter(p => {
+    if (p.section === 'afternoon') return true;
+    if (p.section === 'morning') return false;
     if (!p.time) return false;
     const time = parseInt(p.time.split(':')[0]);
     return time >= 12;
@@ -53,7 +56,11 @@ export function CalendarDay({
 
   const handleAddProject = (period: 'morning' | 'afternoon') => (project: Project) => {
     const defaultTime = period === 'morning' ? '09:00' : '14:00';
-    const projectWithTime = { ...project, time: defaultTime };
+    const projectWithTime = { 
+      ...project, 
+      time: defaultTime,
+      section: period 
+    };
     onAddProject(day, projectWithTime);
   };
 

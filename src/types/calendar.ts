@@ -16,6 +16,7 @@ export interface ScheduledProject extends Project {
   date: Date;
   completed?: boolean;
   time?: string;
+  section?: 'morning' | 'afternoon';
 }
 
 export interface SupabaseScheduledProject {
@@ -26,4 +27,5 @@ export interface SupabaseScheduledProject {
   user_id: string;
   completed?: boolean;
   time?: string;
+  section?: 'morning' | 'afternoon';
 }
