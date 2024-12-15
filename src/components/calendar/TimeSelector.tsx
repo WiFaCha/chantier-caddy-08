@@ -34,13 +34,25 @@ export function TimeSelector({ scheduleId, currentTime, onTimeChange }: TimeSele
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-2">
-        <Input
-          type="time"
-          step="900"
+        <select
           value={time}
           onChange={(e) => handleTimeChange(e.target.value)}
-          className="w-32"
-        />
+          className="w-32 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+        >
+          <option value="">Sélectionner</option>
+          {Array.from({ length: 24 }, (_, hour) => {
+            return [0, 15, 30, 45].map((minute) => {
+              const formattedHour = hour.toString().padStart(2, '0');
+              const formattedMinute = minute.toString().padStart(2, '0');
+              const timeValue = `${formattedHour}:${formattedMinute}`;
+              return (
+                <option key={timeValue} value={timeValue}>
+                  {timeValue}
+                </option>
+              );
+            });
+          })}
+        </select>
       </PopoverContent>
     </Popover>
   );

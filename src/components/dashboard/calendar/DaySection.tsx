@@ -59,7 +59,7 @@ export function DaySection({
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`space-y-2 min-h-[50px] ${snapshot.isDraggingOver ? 'bg-muted/50 rounded-lg' : ''}`}
+            className={`space-y-2 min-h-[50px] p-2 ${snapshot.isDraggingOver ? 'bg-muted/50 rounded-lg' : ''}`}
           >
             {projects.map((project, index) => (
               <ProjectItem
