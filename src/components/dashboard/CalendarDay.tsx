@@ -39,16 +39,19 @@ export function CalendarDay({
   });
 
   const morningProjects = sortedProjects.filter(p => {
-    if (!p.time) return true;
+    if (!p.time) return false; // Changed this line to return false for unscheduled tasks
     const time = parseInt(p.time.split(':')[0]);
     return time < 12;
   });
 
   const afternoonProjects = sortedProjects.filter(p => {
-    if (!p.time) return false;
+    if (!p.time) return false; // Changed this line to return false for unscheduled tasks
     const time = parseInt(p.time.split(':')[0]);
     return time >= 12;
   });
+
+  // Unscheduled projects will be shown in the morning section by default
+  const unscheduledProjects = sortedProjects.filter(p => !p.time);
 
   const handleAddProject = (period: 'morning' | 'afternoon') => (project: Project) => {
     const defaultTime = period === 'morning' ? '09:00' : '14:00';
@@ -65,7 +68,7 @@ export function CalendarDay({
             <DaySection
               title="Matin"
               droppableId={`${day}-morning`}
-              projects={morningProjects}
+              projects={[...morningProjects, ...unscheduledProjects]}
               catalogProjects={catalogProjects}
               isMobile={isMobile}
               onAddProject={handleAddProject('morning')}
