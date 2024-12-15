@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Project, ScheduledProject } from "@/types/calendar";
 import { DayHeader } from "./calendar/DayHeader";
-import { DaySection } from "./calendar/DaySection";
+import { DayContent } from "./calendar/DayContent";
 
 interface CalendarDayProps {
   day: number;
@@ -39,6 +39,7 @@ export function CalendarDay({
   });
 
   const morningProjects = sortedProjects.filter(p => {
+    if (!p.section && !p.time) return true;
     if (p.section === 'morning') return true;
     if (p.section === 'afternoon') return false;
     if (!p.time) return true;
@@ -68,33 +69,17 @@ export function CalendarDay({
     <Card className={`h-full w-full p-4 ${isToday ? 'border-primary border-2' : ''}`}>
       <div className="flex flex-col h-full">
         <DayHeader date={date} isMobile={isMobile} />
-        <div className="space-y-2 flex-1 overflow-y-auto">
-          <div className="relative">
-            <DaySection
-              title="Matin"
-              droppableId={`${day}-morning`}
-              projects={morningProjects}
-              catalogProjects={catalogProjects}
-              isMobile={isMobile}
-              onAddProject={handleAddProject('morning')}
-              onDeleteProject={onDeleteProject}
-              onToggleComplete={onToggleComplete}
-              onTimeChange={onTimeChange}
-            />
-            <div className="my-3 border-t border-border" />
-            <DaySection
-              title="Après-midi"
-              droppableId={`${day}-afternoon`}
-              projects={afternoonProjects}
-              catalogProjects={catalogProjects}
-              isMobile={isMobile}
-              onAddProject={handleAddProject('afternoon')}
-              onDeleteProject={onDeleteProject}
-              onToggleComplete={onToggleComplete}
-              onTimeChange={onTimeChange}
-            />
-          </div>
-        </div>
+        <DayContent
+          morningProjects={morningProjects}
+          afternoonProjects={afternoonProjects}
+          catalogProjects={catalogProjects}
+          isMobile={isMobile}
+          onAddProject={handleAddProject}
+          onDeleteProject={onDeleteProject}
+          onToggleComplete={onToggleComplete}
+          onTimeChange={onTimeChange}
+          day={day}
+        />
       </div>
     </Card>
   );
