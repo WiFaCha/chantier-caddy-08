@@ -1,5 +1,4 @@
 import { Card } from "@/components/ui/card";
-import { useState } from "react";
 import { Project, ScheduledProject } from "@/types/calendar";
 import { DayHeader } from "./calendar/DayHeader";
 import { DaySection } from "./calendar/DaySection";
@@ -40,12 +39,14 @@ export function CalendarDay({
   });
 
   const morningProjects = sortedProjects.filter(p => {
-    const time = p.time ? parseInt(p.time.split(':')[0]) : 0;
+    if (!p.time) return true;
+    const time = parseInt(p.time.split(':')[0]);
     return time < 12;
   });
 
   const afternoonProjects = sortedProjects.filter(p => {
-    const time = p.time ? parseInt(p.time.split(':')[0]) : 0;
+    if (!p.time) return false;
+    const time = parseInt(p.time.split(':')[0]);
     return time >= 12;
   });
 

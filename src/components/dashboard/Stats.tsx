@@ -134,7 +134,7 @@ export function Stats() {
                       className="flex items-center text-sm hover:underline"
                     >
                       <MapPin className="mr-1 h-4 w-4" />
-                      {project.address}
+                      Itinéraire
                     </button>
                   )}
                   <div className="flex items-center gap-2 mt-1">
