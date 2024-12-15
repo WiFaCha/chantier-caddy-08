@@ -1,13 +1,11 @@
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus } from "lucide-react";
-import { ProjectCard } from "./ProjectCard";
-import { ProjectDialog } from "./ProjectDialog";
 import { useState } from "react";
 import { Project } from "@/types/calendar";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { ProjectListHeader } from "./ProjectListHeader";
+import { ProjectListContent } from "./ProjectListContent";
 
 export function ProjectList() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -115,19 +113,11 @@ export function ProjectList() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-2xl font-bold">Catalogue des Chantiers</h2>
-        <ProjectDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          onSubmit={handleCreateProject}
-          trigger={
-            <Button>
-              <Plus className="mr-2 h-4 w-4" /> Nouveau Chantier
-            </Button>
-          }
-        />
-      </div>
+      <ProjectListHeader
+        dialogOpen={dialogOpen}
+        setDialogOpen={setDialogOpen}
+        onCreateProject={handleCreateProject}
+      />
       <Input
         type="search"
         placeholder="Rechercher un chantier..."
@@ -135,16 +125,11 @@ export function ProjectList() {
         onChange={(e) => setSearchTerm(e.target.value)}
         className="max-w-sm"
       />
-      <div className="grid gap-4">
-        {filteredProjects.map((project) => (
-          <ProjectCard
-            key={project.id}
-            {...project}
-            onUpdate={(data) => handleUpdateProject(project.id, data)}
-            onDelete={() => handleDeleteProject(project.id)}
-          />
-        ))}
-      </div>
+      <ProjectListContent
+        projects={filteredProjects}
+        onUpdateProject={handleUpdateProject}
+        onDeleteProject={handleDeleteProject}
+      />
     </div>
   );
 }
