@@ -20,6 +20,7 @@ export type Database = {
           title: string
           type: string
           user_id: string
+          window_cleaning?: string[]
         }
         Insert: {
           address: string
@@ -31,6 +32,7 @@ export type Database = {
           title: string
           type: string
           user_id: string
+          window_cleaning?: string[]
         }
         Update: {
           address?: string
@@ -42,6 +44,7 @@ export type Database = {
           title?: string
           type?: string
           user_id?: string
+          window_cleaning?: string[]
         }
         Relationships: []
       }
@@ -52,6 +55,7 @@ export type Database = {
           id: string
           project_id: string | null
           schedule_date: string
+          section: 'morning' | 'afternoon' | null
           time: string | null
           user_id: string
         }
@@ -61,6 +65,7 @@ export type Database = {
           id?: string
           project_id?: string | null
           schedule_date: string
+          section?: 'morning' | 'afternoon' | null
           time?: string | null
           user_id: string
         }
@@ -70,6 +75,7 @@ export type Database = {
           id?: string
           project_id?: string | null
           schedule_date?: string
+          section?: 'morning' | 'afternoon' | null
           time?: string | null
           user_id?: string
         }
