@@ -16,7 +16,11 @@ export function ProjectCard({ id, title, address, price, details, color, type, w
     violet: "border-violet-500",
     blue: "border-blue-500",
     green: "border-green-500",
-    red: "border-red-500"
+    red: "border-red-500",
+    magenta: "border-[#D946EF]",
+    orange: "border-[#F97316]",
+    ocean: "border-[#0EA5E9]",
+    purple: "border-[#8B5CF6]"
   }[color];
 
   const handleAddressClick = () => {
