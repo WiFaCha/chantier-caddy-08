@@ -26,6 +26,17 @@ export function DayContent({
   onSectionChange,
   day
 }: DayContentProps) {
+  const formatProjectTitle = (project: ScheduledProject) => {
+    let title = project.title;
+    if (project.window_cleaning && project.window_cleaning.length > 0) {
+      title = `${title} • Vitres`;
+    }
+    if (project.time) {
+      title = `${title} (${project.time})`;
+    }
+    return title;
+  };
+
   return (
     <div className="space-y-2 flex-1 overflow-y-auto">
       <div className="relative">
@@ -34,9 +45,7 @@ export function DayContent({
           droppableId={`${day}-morning`}
           projects={morningProjects.map(project => ({
             ...project,
-            title: project.window_cleaning && project.window_cleaning.length > 0 
-              ? `${project.title} • Vitres${project.time ? ` (${project.time})` : ''}`
-              : project.title
+            title: formatProjectTitle(project)
           }))}
           catalogProjects={catalogProjects}
           isMobile={isMobile}
@@ -52,9 +61,7 @@ export function DayContent({
           droppableId={`${day}-afternoon`}
           projects={afternoonProjects.map(project => ({
             ...project,
-            title: project.window_cleaning && project.window_cleaning.length > 0 
-              ? `${project.title} • Vitres${project.time ? ` (${project.time})` : ''}`
-              : project.title
+            title: formatProjectTitle(project)
           }))}
           catalogProjects={catalogProjects}
           isMobile={isMobile}
