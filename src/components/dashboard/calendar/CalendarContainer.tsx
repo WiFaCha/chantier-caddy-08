@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { CalendarView } from "./CalendarView";
-import { Project, ScheduledProject } from "@/types/calendar";
+import { Project } from "@/types/calendar";
 
 // Définir un ID utilisateur par défaut
 const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000000";
@@ -54,7 +54,8 @@ export function CalendarContainer() {
           scheduleId: sp.id,
           date: date,
           completed: sp.completed,
-          time: sp.time
+          time: sp.time,
+          section: sp.section
         };
       }) || [];
     },
@@ -73,7 +74,9 @@ export function CalendarContainer() {
         .insert([{
           project_id: project.id,
           schedule_date: scheduleDate.toISOString().split('T')[0],
-          user_id: DEFAULT_USER_ID // Utiliser l'ID utilisateur par défaut
+          user_id: DEFAULT_USER_ID,
+          time: project.time,
+          section: project.section
         }]);
 
       if (error) throw error;
@@ -122,7 +125,7 @@ export function CalendarContainer() {
         .from('scheduled_projects')
         .update({ 
           completed: !currentProject?.completed,
-          user_id: DEFAULT_USER_ID // Utiliser l'ID utilisateur par défaut
+          user_id: DEFAULT_USER_ID
         })
         .eq('id', scheduleId);
 
@@ -197,3 +200,4 @@ export function CalendarContainer() {
       onSectionChange={handleSectionChange}
     />
   );
+}
