@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Trash } from "lucide-react";
 import { Draggable } from "react-beautiful-dnd";
 import { ScheduledProject } from "@/types/calendar";
@@ -52,11 +52,17 @@ export function ProjectItem({
           }`}
         >
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <Checkbox
-              checked={project.completed}
-              onCheckedChange={() => onToggleComplete(project.scheduleId)}
-              className="h-4 w-4 bg-white/20 border-white/40 data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
-            />
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-[10px] opacity-80">AM</span>
+              <Switch
+                checked={project.section === 'afternoon'}
+                onCheckedChange={(checked) => 
+                  onSectionChange(project.scheduleId, checked ? 'afternoon' : 'morning')
+                }
+                className="data-[state=checked]:bg-white/20 data-[state=unchecked]:bg-white/20 transform -rotate-90"
+              />
+              <span className="text-[10px] opacity-80">PM</span>
+            </div>
             <div className="truncate flex flex-col gap-1">
               <span className="truncate">
                 {project.title}
