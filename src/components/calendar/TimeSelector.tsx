@@ -5,7 +5,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Input } from "@/components/ui/input";
 import { useState } from "react";
 
 interface TimeSelectorProps {
@@ -40,7 +39,7 @@ export function TimeSelector({ scheduleId, currentTime, onTimeChange }: TimeSele
           className="w-32 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
         >
           <option value="">Sélectionner</option>
-          {Array.from({ length: 24 }, (_, hour) => {
+          {Array.from({ length: 17 }, (_, i) => i + 6).map((hour) => {
             return [0, 15, 30, 45].map((minute) => {
               const formattedHour = hour.toString().padStart(2, '0');
               const formattedMinute = minute.toString().padStart(2, '0');

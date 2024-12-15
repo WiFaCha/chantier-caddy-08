@@ -52,7 +52,8 @@ export function CalendarDay({
 
   const handleAddProject = (period: 'morning' | 'afternoon') => (project: Project) => {
     const defaultTime = period === 'morning' ? '09:00' : '14:00';
-    onAddProject(day, { ...project, time: defaultTime });
+    const projectWithTime = { ...project, time: defaultTime };
+    onAddProject(day, projectWithTime);
   };
 
   return (
