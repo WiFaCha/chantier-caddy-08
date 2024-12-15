@@ -5,7 +5,7 @@ import { ProjectDialog } from "./ProjectDialog";
 import { RecurrenceDialog } from "./RecurrenceDialog";
 import { Project } from "@/types/calendar";
 
-interface ProjectCardProps {
+type ProjectCardProps = {
   id: string;
   title: string;
   address: string;
@@ -14,7 +14,7 @@ interface ProjectCardProps {
   color: Project['color'];
   type: "Mensuel" | "Ponctuel";
   window_cleaning?: string[];
-  onUpdate: (data: Omit<Project, "id" | "user_id">) => void;
+  onUpdate: (data: Required<Omit<Project, "id" | "user_id" | "time" | "section">>) => void;
   onDelete: () => void;
 }
 
