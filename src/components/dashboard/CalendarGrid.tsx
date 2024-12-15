@@ -38,6 +38,7 @@ export function CalendarGrid({
               onDeleteProject={onDeleteProject}
               onToggleComplete={onToggleComplete}
               onTimeChange={onTimeChange}
+              isMobile={isMobile}
             />
           </div>
         ))}
@@ -60,6 +61,7 @@ export function CalendarGrid({
               onDeleteProject={onDeleteProject}
               onToggleComplete={onToggleComplete}
               onTimeChange={onTimeChange}
+              isMobile={isMobile}
             />
           </div>
         ))}
