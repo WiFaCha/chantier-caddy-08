@@ -32,7 +32,12 @@ export function DayContent({
         <DaySection
           title="Matin"
           droppableId={`${day}-morning`}
-          projects={morningProjects}
+          projects={morningProjects.map(project => ({
+            ...project,
+            title: project.window_cleaning && project.window_cleaning.length > 0 
+              ? `${project.title} • Vitres${project.time ? ` (${project.time})` : ''}`
+              : project.title
+          }))}
           catalogProjects={catalogProjects}
           isMobile={isMobile}
           onAddProject={onAddProject('morning')}
@@ -45,7 +50,12 @@ export function DayContent({
         <DaySection
           title="Après-midi"
           droppableId={`${day}-afternoon`}
-          projects={afternoonProjects}
+          projects={afternoonProjects.map(project => ({
+            ...project,
+            title: project.window_cleaning && project.window_cleaning.length > 0 
+              ? `${project.title} • Vitres${project.time ? ` (${project.time})` : ''}`
+              : project.title
+          }))}
           catalogProjects={catalogProjects}
           isMobile={isMobile}
           onAddProject={onAddProject('afternoon')}
