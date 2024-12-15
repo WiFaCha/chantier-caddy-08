@@ -9,6 +9,7 @@ export interface Project {
   user_id?: string;
   window_cleaning?: string[];
   time?: string;
+  section?: 'morning' | 'afternoon';
 }
 
 export interface ScheduledProject extends Project {

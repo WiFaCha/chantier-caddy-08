@@ -22,6 +22,7 @@ interface CalendarViewProps {
   onDeleteProject: (scheduleId: string) => void;
   onToggleComplete: (scheduleId: string) => void;
   onTimeChange: (scheduleId: string, time: string) => void;
+  onSectionChange: (scheduleId: string, section: 'morning' | 'afternoon') => void;
 }
 
 export function CalendarView({
@@ -34,7 +35,8 @@ export function CalendarView({
   onAddProject,
   onDeleteProject,
   onToggleComplete,
-  onTimeChange
+  onTimeChange,
+  onSectionChange
 }: CalendarViewProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -88,7 +90,6 @@ export function CalendarView({
 
   const days = getDaysToDisplay(currentDate, viewMode, isMobile);
 
-  // Filtrer les jours pour n'afficher que ceux avec des projets sélectionnés
   const filteredDays = selectedProjects.length > 0
     ? days.filter(day => {
         if (!day) return false;
@@ -146,6 +147,7 @@ export function CalendarView({
             onDeleteProject={onDeleteProject}
             onToggleComplete={onToggleComplete}
             onTimeChange={onTimeChange}
+            onSectionChange={onSectionChange}
             isMobile={isMobile}
           />
         </DragDropContext>
