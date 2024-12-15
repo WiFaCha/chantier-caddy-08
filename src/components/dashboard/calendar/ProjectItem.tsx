@@ -23,12 +23,6 @@ export function ProjectItem({
   onTimeChange,
   onSectionChange
 }: ProjectItemProps) {
-  const isWindowCleaningMonth = () => {
-    if (!project.window_cleaning) return false;
-    const currentMonth = (project.date.getMonth() + 1).toString();
-    return project.window_cleaning.includes(currentMonth);
-  };
-
   return (
     <Draggable
       key={project.scheduleId}
@@ -40,7 +34,7 @@ export function ProjectItem({
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          className={`flex items-center justify-between rounded-lg p-3 ${isMobile ? 'text-sm' : 'text-xs'} text-white ${
+          className={`flex flex-col gap-2 rounded-lg p-3 ${isMobile ? 'text-sm' : 'text-xs'} text-white ${
             project.color === "violet"
               ? "bg-violet-500"
               : project.color === "blue"
@@ -60,34 +54,16 @@ export function ProjectItem({
               : "bg-gray-500"
           }`}
         >
-          <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="truncate">
+            {project.title}
+          </div>
+          <div className="flex items-center justify-end gap-1">
             <button
               onClick={() => onSectionChange(project.scheduleId, project.section === 'morning' ? 'afternoon' : 'morning')}
               className="text-[10px] opacity-80 hover:opacity-100 transition-opacity px-1"
             >
               {project.section === 'morning' ? 'AM' : 'PM'}
             </button>
-            <div className="truncate flex flex-col gap-1">
-              <span className="truncate">
-                {project.title}
-              </span>
-              <div className="flex items-center gap-2">
-                {project.time && (
-                  <span className="text-xs flex items-center gap-1 opacity-80">
-                    <div className="w-2 h-2 rounded-full bg-green-300"></div>
-                    {project.time}
-                  </span>
-                )}
-                {isWindowCleaningMonth() && (
-                  <span className="text-xs flex items-center gap-1 opacity-80">
-                    <div className="w-2 h-2 rounded-full bg-blue-300"></div>
-                    Vitres
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
             <TimeSelector
               scheduleId={project.scheduleId}
               currentTime={project.time}

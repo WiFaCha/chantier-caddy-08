@@ -58,11 +58,10 @@ export function CalendarDay({
   });
 
   const handleAddProject = (period: 'morning' | 'afternoon') => (project: Project) => {
-    const defaultTime = period === 'morning' ? '09:00' : '14:00';
     const projectWithTime = { 
       ...project, 
-      time: defaultTime,
-      section: period 
+      section: 'morning',  // Toujours définir la section à 'morning' par défaut
+      time: undefined      // Pas d'heure par défaut
     };
     onAddProject(day, projectWithTime);
   };
