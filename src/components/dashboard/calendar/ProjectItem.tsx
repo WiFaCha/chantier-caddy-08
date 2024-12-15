@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Trash } from "lucide-react";
 import { Draggable } from "react-beautiful-dnd";
 import { ScheduledProject } from "@/types/calendar";
@@ -48,21 +47,26 @@ export function ProjectItem({
               ? "bg-blue-500"
               : project.color === "green"
               ? "bg-green-500"
-              : "bg-red-500"
+              : project.color === "red"
+              ? "bg-red-500"
+              : project.color === "magenta"
+              ? "bg-[#D946EF]"
+              : project.color === "orange"
+              ? "bg-[#F97316]"
+              : project.color === "ocean"
+              ? "bg-[#0EA5E9]"
+              : project.color === "purple"
+              ? "bg-[#8B5CF6]"
+              : "bg-gray-500"
           }`}
         >
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <div className="flex flex-col items-center gap-1">
-              <span className="text-[10px] opacity-80">AM</span>
-              <Switch
-                checked={project.section === 'afternoon'}
-                onCheckedChange={(checked) => 
-                  onSectionChange(project.scheduleId, checked ? 'afternoon' : 'morning')
-                }
-                className="data-[state=checked]:bg-white/20 data-[state=unchecked]:bg-white/20 transform -rotate-90"
-              />
-              <span className="text-[10px] opacity-80">PM</span>
-            </div>
+            <button
+              onClick={() => onSectionChange(project.scheduleId, project.section === 'morning' ? 'afternoon' : 'morning')}
+              className="text-[10px] opacity-80 hover:opacity-100 transition-opacity px-1"
+            >
+              {project.section === 'morning' ? 'AM' : 'PM'}
+            </button>
             <div className="truncate flex flex-col gap-1">
               <span className="truncate">
                 {project.title}
