@@ -2,7 +2,6 @@ import { Card } from "@/components/ui/card";
 import { Project, ScheduledProject } from "@/types/calendar";
 import { DayHeader } from "./calendar/DayHeader";
 import { DaySection } from "./calendar/DaySection";
-import { useState } from "react";
 
 interface CalendarDayProps {
   day: number;
@@ -34,14 +33,14 @@ export function CalendarDay({
 
   const sortedProjects = [...projects].sort((a, b) => {
     if (!a.time && !b.time) return 0;
-    if (!a.time) return 1;
-    if (!b.time) return -1;
+    if (!a.time) return -1; // Les projets sans heure apparaissent en premier
+    if (!b.time) return 1;
     return a.time.localeCompare(b.time);
   });
 
   // Sépare les projets en fonction de leur section (matin/après-midi)
   const morningProjects = sortedProjects.filter(p => {
-    if (!p.time) return false;
+    if (!p.time) return true; // Par défaut, les projets sans heure sont le matin
     const time = parseInt(p.time.split(':')[0]);
     return time < 12;
   });
@@ -51,9 +50,6 @@ export function CalendarDay({
     const time = parseInt(p.time.split(':')[0]);
     return time >= 12;
   });
-
-  // Les projets sans heure seront affichés dans leur section respective
-  const unscheduledProjects = sortedProjects.filter(p => !p.time);
 
   const handleAddProject = (period: 'morning' | 'afternoon') => (project: Project) => {
     const defaultTime = period === 'morning' ? '09:00' : '14:00';
@@ -82,7 +78,7 @@ export function CalendarDay({
             <DaySection
               title="Après-midi"
               droppableId={`${day}-afternoon`}
-              projects={[...afternoonProjects, ...unscheduledProjects]}
+              projects={afternoonProjects}
               catalogProjects={catalogProjects}
               isMobile={isMobile}
               onAddProject={handleAddProject('afternoon')}
