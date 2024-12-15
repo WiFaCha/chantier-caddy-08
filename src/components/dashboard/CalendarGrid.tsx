@@ -10,6 +10,7 @@ interface CalendarGridProps {
   onDeleteProject: (scheduleId: string) => void;
   onToggleComplete: (scheduleId: string) => void;
   onTimeChange: (scheduleId: string, time: string) => void;
+  onSectionChange: (scheduleId: string, section: 'morning' | 'afternoon') => void;
   isMobile: boolean;
 }
 
@@ -21,6 +22,7 @@ export function CalendarGrid({
   onDeleteProject,
   onToggleComplete,
   onTimeChange,
+  onSectionChange,
   isMobile
 }: CalendarGridProps) {
   if (isMobile) {
@@ -38,6 +40,7 @@ export function CalendarGrid({
               onDeleteProject={onDeleteProject}
               onToggleComplete={onToggleComplete}
               onTimeChange={onTimeChange}
+              onSectionChange={onSectionChange}
               isMobile={isMobile}
             />
           </div>
@@ -61,6 +64,7 @@ export function CalendarGrid({
               onDeleteProject={onDeleteProject}
               onToggleComplete={onToggleComplete}
               onTimeChange={onTimeChange}
+              onSectionChange={onSectionChange}
               isMobile={isMobile}
             />
           </div>

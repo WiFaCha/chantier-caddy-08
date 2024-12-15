@@ -10,6 +10,7 @@ interface DayContentProps {
   onDeleteProject: (scheduleId: string) => void;
   onToggleComplete: (scheduleId: string) => void;
   onTimeChange: (scheduleId: string, time: string) => void;
+  onSectionChange: (scheduleId: string, section: 'morning' | 'afternoon') => void;
   day: number;
 }
 
@@ -22,6 +23,7 @@ export function DayContent({
   onDeleteProject,
   onToggleComplete,
   onTimeChange,
+  onSectionChange,
   day
 }: DayContentProps) {
   return (
@@ -37,6 +39,7 @@ export function DayContent({
           onDeleteProject={onDeleteProject}
           onToggleComplete={onToggleComplete}
           onTimeChange={onTimeChange}
+          onSectionChange={onSectionChange}
         />
         <div className="my-3 border-t border-border" />
         <DaySection
@@ -49,6 +52,7 @@ export function DayContent({
           onDeleteProject={onDeleteProject}
           onToggleComplete={onToggleComplete}
           onTimeChange={onTimeChange}
+          onSectionChange={onSectionChange}
         />
       </div>
     </div>

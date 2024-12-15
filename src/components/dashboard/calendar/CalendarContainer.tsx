@@ -144,7 +144,29 @@ export function CalendarContainer() {
         .from('scheduled_projects')
         .update({ 
           time: time,
-          user_id: DEFAULT_USER_ID // Utiliser l'ID utilisateur par défaut
+          user_id: DEFAULT_USER_ID
+        })
+        .eq('id', scheduleId);
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSectionChange = async (scheduleId: string, section: 'morning' | 'afternoon') => {
+    try {
+      const { error } = await supabase
+        .from('scheduled_projects')
+        .update({ 
+          section: section,
+          user_id: DEFAULT_USER_ID
         })
         .eq('id', scheduleId);
 
@@ -172,6 +194,6 @@ export function CalendarContainer() {
       onDeleteProject={handleDeleteProject}
       onToggleComplete={handleToggleComplete}
       onTimeChange={handleTimeChange}
+      onSectionChange={handleSectionChange}
     />
   );
-}

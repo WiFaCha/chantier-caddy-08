@@ -12,6 +12,7 @@ interface ProjectItemProps {
   onToggleComplete: (scheduleId: string) => void;
   onDeleteProject: (scheduleId: string) => void;
   onTimeChange: (scheduleId: string, time: string) => void;
+  onSectionChange: (scheduleId: string, section: 'morning' | 'afternoon') => void;
 }
 
 export function ProjectItem({
@@ -20,7 +21,8 @@ export function ProjectItem({
   isMobile,
   onToggleComplete,
   onDeleteProject,
-  onTimeChange
+  onTimeChange,
+  onSectionChange
 }: ProjectItemProps) {
   const isWindowCleaningMonth = () => {
     if (!project.window_cleaning) return false;
@@ -79,7 +81,9 @@ export function ProjectItem({
             <TimeSelector
               scheduleId={project.scheduleId}
               currentTime={project.time}
+              currentSection={project.section}
               onTimeChange={onTimeChange}
+              onSectionChange={onSectionChange}
             />
             <Button
               variant="ghost"

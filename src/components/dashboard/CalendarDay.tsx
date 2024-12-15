@@ -13,6 +13,7 @@ interface CalendarDayProps {
   onDeleteProject: (scheduleId: string) => void;
   onToggleComplete: (scheduleId: string) => void;
   onTimeChange: (scheduleId: string, time: string) => void;
+  onSectionChange: (scheduleId: string, section: 'morning' | 'afternoon') => void;
   isMobile: boolean;
 }
 
@@ -26,6 +27,7 @@ export function CalendarDay({
   onDeleteProject,
   onToggleComplete,
   onTimeChange,
+  onSectionChange,
   isMobile
 }: CalendarDayProps) {
   const date = new Date(year, month, day);
@@ -39,9 +41,9 @@ export function CalendarDay({
   });
 
   const morningProjects = sortedProjects.filter(p => {
-    if (!p.section && !p.time) return true;
     if (p.section === 'morning') return true;
     if (p.section === 'afternoon') return false;
+    if (!p.section && !p.time) return true;
     if (!p.time) return true;
     const time = parseInt(p.time.split(':')[0]);
     return time < 12;
@@ -78,6 +80,7 @@ export function CalendarDay({
           onDeleteProject={onDeleteProject}
           onToggleComplete={onToggleComplete}
           onTimeChange={onTimeChange}
+          onSectionChange={onSectionChange}
           day={day}
         />
       </div>

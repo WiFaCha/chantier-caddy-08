@@ -14,6 +14,7 @@ interface DaySectionProps {
   onDeleteProject: (scheduleId: string) => void;
   onToggleComplete: (scheduleId: string) => void;
   onTimeChange: (scheduleId: string, time: string) => void;
+  onSectionChange: (scheduleId: string, section: 'morning' | 'afternoon') => void;
 }
 
 export function DaySection({
@@ -25,7 +26,8 @@ export function DaySection({
   onAddProject,
   onDeleteProject,
   onToggleComplete,
-  onTimeChange
+  onTimeChange,
+  onSectionChange
 }: DaySectionProps) {
   return (
     <div>
@@ -70,6 +72,7 @@ export function DaySection({
                 onToggleComplete={onToggleComplete}
                 onDeleteProject={onDeleteProject}
                 onTimeChange={onTimeChange}
+                onSectionChange={onSectionChange}
               />
             ))}
             {provided.placeholder}
