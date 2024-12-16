@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
-import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { toast } from "sonner";
+import { getProjectsForDay } from "@/utils/calendarUtils";
 
 interface ExportPDFButtonProps {
   calendarRef: React.RefObject<HTMLDivElement>;
@@ -10,50 +10,11 @@ interface ExportPDFButtonProps {
 }
 
 export function ExportPDFButton({ calendarRef, viewMode }: ExportPDFButtonProps) {
-  const handleExport = async () => {
+  const handleExport = () => {
     if (!calendarRef.current) return;
 
     try {
       toast.loading("Génération du PDF en cours...");
-      
-      // Temporarily modify styles for better PDF rendering
-      const originalStyle = calendarRef.current.style.cssText;
-      calendarRef.current.style.width = "100%";
-      calendarRef.current.style.height = "auto";
-      calendarRef.current.style.overflow = "visible";
-      
-      // Find all project cards and temporarily modify their styles
-      const projectCards = calendarRef.current.querySelectorAll('[class*="truncate"]');
-      projectCards.forEach((card: any) => {
-        card.style.whiteSpace = "normal";
-        card.style.overflow = "visible";
-        card.style.textOverflow = "clip";
-      });
-
-      const canvas = await html2canvas(calendarRef.current, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        windowWidth: 1920,
-        onclone: (document, element) => {
-          // Additional styling for the cloned element
-          element.style.transform = "scale(1)";
-          element.style.width = "100%";
-          element.style.height = "auto";
-        }
-      });
-
-      // Reset styles
-      calendarRef.current.style.cssText = originalStyle;
-      projectCards.forEach((card: any) => {
-        card.style.whiteSpace = "";
-        card.style.overflow = "";
-        card.style.textOverflow = "";
-      });
-
-      // Calculate dimensions for PDF
-      const imgWidth = 297; // A4 width in mm (landscape)
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
       const pdf = new jsPDF({
         orientation: "landscape",
@@ -61,17 +22,72 @@ export function ExportPDFButton({ calendarRef, viewMode }: ExportPDFButtonProps)
         format: "a4",
       });
 
-      // Add the image with proper scaling
-      pdf.addImage(
-        canvas.toDataURL("image/jpeg", 1.0),
-        "JPEG",
-        0,
-        0,
-        imgWidth,
-        imgHeight,
-        undefined,
-        "FAST"
-      );
+      // Configuration du PDF
+      pdf.setFontSize(12);
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      
+      // En-tête
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Calendrier", margin, margin + 5);
+      pdf.setFont("helvetica", "normal");
+      
+      // Création du tableau
+      const days = Array.from(calendarRef.current.querySelectorAll('[class*="Card"]')).map(day => {
+        const dateHeader = day.querySelector('time')?.textContent || '';
+        const morningProjects = Array.from(day.querySelectorAll('[class*="morning"]')).map(p => p.textContent);
+        const afternoonProjects = Array.from(day.querySelectorAll('[class*="afternoon"]')).map(p => p.textContent);
+        
+        return {
+          date: dateHeader,
+          morning: morningProjects.join('\n'),
+          afternoon: afternoonProjects.join('\n')
+        };
+      });
+
+      // Configuration du tableau
+      const columns = ['Date', 'Matin', 'Après-midi'];
+      const columnWidth = (pageWidth - (2 * margin)) / columns.length;
+      
+      // En-têtes du tableau
+      pdf.setFillColor(240, 240, 240);
+      pdf.rect(margin, margin + 10, pageWidth - (2 * margin), 10, 'F');
+      columns.forEach((col, i) => {
+        pdf.text(col, margin + (i * columnWidth) + 5, margin + 16);
+      });
+
+      // Contenu du tableau
+      let yPos = margin + 25;
+      const rowHeight = 20;
+
+      days.forEach((day, index) => {
+        if (yPos + rowHeight > pageHeight - margin) {
+          pdf.addPage();
+          yPos = margin + 10;
+        }
+
+        // Lignes du tableau
+        pdf.setDrawColor(200, 200, 200);
+        pdf.line(margin, yPos, pageWidth - margin, yPos);
+        
+        // Contenu des cellules
+        pdf.text(day.date, margin + 5, yPos + 5);
+        pdf.text(day.morning || '-', margin + columnWidth + 5, yPos + 5);
+        pdf.text(day.afternoon || '-', margin + (2 * columnWidth) + 5, yPos + 5);
+
+        yPos += rowHeight;
+      });
+
+      // Dernière ligne du tableau
+      pdf.line(margin, yPos, pageWidth - margin, yPos);
+
+      // Lignes verticales
+      columns.forEach((_, i) => {
+        const x = margin + (i * columnWidth);
+        pdf.line(x, margin + 10, x, yPos);
+      });
+      pdf.line(pageWidth - margin, margin + 10, pageWidth - margin, yPos);
 
       const fileName = `calendrier-${viewMode}-${new Date().toLocaleDateString()}.pdf`;
       pdf.save(fileName);
