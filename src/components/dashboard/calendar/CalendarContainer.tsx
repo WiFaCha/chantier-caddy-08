@@ -4,6 +4,13 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { CalendarView } from "./CalendarView";
 import { Project } from "@/types/calendar";
+import { getCurrentUser } from "@/utils/supabaseUtils";
+import { 
+  toggleProjectComplete,
+  updateProjectTime,
+  updateProjectSection,
+  addProjectToCalendar
+} from "@/utils/calendarOperations";
 
 export function CalendarContainer() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -14,7 +21,7 @@ export function CalendarContainer() {
   const { data: projects = [] } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
       
       if (!user) {
         console.log("No authenticated user found");
@@ -42,7 +49,7 @@ export function CalendarContainer() {
   const { data: scheduledProjects = [] } = useQuery({
     queryKey: ['scheduledProjects'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
       
       if (!user) {
         console.log("No authenticated user found");
@@ -82,35 +89,14 @@ export function CalendarContainer() {
 
   const handleAddProject = async (day: number, project: Project) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast({
-          title: "Erreur",
-          description: "Vous devez être connecté pour ajouter un projet",
-          variant: "destructive",
-        });
-        return;
-      }
-
       const scheduleDate = new Date(Date.UTC(
         currentDate.getFullYear(),
         currentDate.getMonth(),
         day
       ));
       
-      const { error } = await supabase
-        .from('scheduled_projects')
-        .insert([{
-          project_id: project.id,
-          schedule_date: scheduleDate.toISOString().split('T')[0],
-          user_id: user.id,
-          time: project.time,
-          section: project.section
-        }]);
-
-      if (error) throw error;
-
+      await addProjectToCalendar(project, scheduleDate, project.time, project.section);
+      
       queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
       toast({
         title: "Succès",
@@ -151,16 +137,7 @@ export function CalendarContainer() {
   const handleToggleComplete = async (scheduleId: string) => {
     try {
       const currentProject = scheduledProjects.find(p => p.scheduleId === scheduleId);
-      const { error } = await supabase
-        .from('scheduled_projects')
-        .update({ 
-          completed: !currentProject?.completed,
-          user_id: user.id
-        })
-        .eq('id', scheduleId);
-
-      if (error) throw error;
-
+      await toggleProjectComplete(scheduleId, !!currentProject?.completed);
       queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
     } catch (error: any) {
       toast({
@@ -173,16 +150,7 @@ export function CalendarContainer() {
 
   const handleTimeChange = async (scheduleId: string, time: string) => {
     try {
-      const { error } = await supabase
-        .from('scheduled_projects')
-        .update({ 
-          time: time,
-          user_id: user.id
-        })
-        .eq('id', scheduleId);
-
-      if (error) throw error;
-
+      await updateProjectTime(scheduleId, time);
       queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
     } catch (error: any) {
       toast({
@@ -195,16 +163,7 @@ export function CalendarContainer() {
 
   const handleSectionChange = async (scheduleId: string, section: 'morning' | 'afternoon') => {
     try {
-      const { error } = await supabase
-        .from('scheduled_projects')
-        .update({ 
-          section: section,
-          user_id: user.id
-        })
-        .eq('id', scheduleId);
-
-      if (error) throw error;
-
+      await updateProjectSection(scheduleId, section);
       queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
     } catch (error: any) {
       toast({
