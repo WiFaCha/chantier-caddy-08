@@ -45,7 +45,7 @@ export function useCalendar() {
     },
   });
 
-  const { data: scheduledProjects = [] } = useQuery({
+  const { data: scheduledProjects = [], refetch: refetchScheduledProjects } = useQuery({
     queryKey: ['scheduledProjects'],
     queryFn: async () => {
       const user = await getCurrentUser();
@@ -96,7 +96,7 @@ export function useCalendar() {
       
       await addProjectToCalendar(project, scheduleDate, project.time, project.section);
       
-      queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
+      await refetchScheduledProjects();
       toast({
         title: "Succès",
         description: "Le chantier a été planifié avec succès",
@@ -119,7 +119,7 @@ export function useCalendar() {
 
       if (error) throw error;
 
-      queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
+      await refetchScheduledProjects();
       toast({
         title: "Succès",
         description: "Le chantier a été supprimé du calendrier",
@@ -137,7 +137,7 @@ export function useCalendar() {
     try {
       const currentProject = scheduledProjects.find(p => p.scheduleId === scheduleId);
       await toggleProjectComplete(scheduleId, !!currentProject?.completed);
-      queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
+      await refetchScheduledProjects();
     } catch (error: any) {
       toast({
         title: "Erreur",
@@ -150,7 +150,10 @@ export function useCalendar() {
   const handleTimeChange = async (scheduleId: string, time: string) => {
     try {
       await updateProjectTime(scheduleId, time);
-      queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
+      const hour = parseInt(time.split(':')[0]);
+      const section = hour >= 12 ? 'afternoon' : 'morning';
+      await updateProjectSection(scheduleId, section);
+      await refetchScheduledProjects();
     } catch (error: any) {
       toast({
         title: "Erreur",
@@ -163,7 +166,7 @@ export function useCalendar() {
   const handleSectionChange = async (scheduleId: string, section: 'morning' | 'afternoon') => {
     try {
       await updateProjectSection(scheduleId, section);
-      queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
+      await refetchScheduledProjects();
     } catch (error: any) {
       toast({
         title: "Erreur",

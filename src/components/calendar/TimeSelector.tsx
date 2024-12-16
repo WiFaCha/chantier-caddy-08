@@ -5,7 +5,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 
 interface TimeSelectorProps {
@@ -25,6 +25,17 @@ export function TimeSelector({
 }: TimeSelectorProps) {
   const [time, setTime] = useState(currentTime || "");
   const [section, setSection] = useState<'morning' | 'afternoon'>(currentSection);
+
+  useEffect(() => {
+    if (time) {
+      const hour = parseInt(time.split(':')[0]);
+      const newSection = hour >= 12 ? 'afternoon' : 'morning';
+      if (newSection !== section) {
+        setSection(newSection);
+        onSectionChange(scheduleId, newSection);
+      }
+    }
+  }, [time, section, scheduleId, onSectionChange]);
 
   const handleTimeChange = (newTime: string) => {
     setTime(newTime);
