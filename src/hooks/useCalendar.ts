@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { Project } from "@/types/calendar";
@@ -17,25 +17,18 @@ export function useCalendar() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { data: projects = [] } = useQuery({
+  const { data: projects = [], isLoading: isProjectsLoading } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
       const user = await getCurrentUser();
-      
-      if (!user) {
-        console.log("No authenticated user found");
-        return [];
-      }
+      if (!user) return [];
 
       const { data, error } = await supabase
         .from('projects')
         .select('*')
         .eq('user_id', user.id);
       
-      if (error) {
-        console.error("Error fetching projects:", error);
-        throw error;
-      }
+      if (error) throw error;
       
       return (data || []).map(project => ({
         ...project,
@@ -49,11 +42,7 @@ export function useCalendar() {
     queryKey: ['scheduledProjects'],
     queryFn: async () => {
       const user = await getCurrentUser();
-      
-      if (!user) {
-        console.log("No authenticated user found");
-        return [];
-      }
+      if (!user) return [];
 
       const { data, error } = await supabase
         .from('scheduled_projects')
@@ -63,10 +52,7 @@ export function useCalendar() {
         `)
         .eq('user_id', user.id);
       
-      if (error) {
-        console.error("Error fetching scheduled projects:", error);
-        throw error;
-      }
+      if (error) throw error;
       
       return (data || []).map((sp: any) => {
         const date = new Date(sp.schedule_date);
@@ -84,7 +70,31 @@ export function useCalendar() {
         };
       });
     },
+    staleTime: 0, // Toujours considérer les données comme périmées
+    cacheTime: 0, // Ne pas mettre en cache les données
   });
+
+  // Écouter les changements en temps réel
+  useEffect(() => {
+    const channel = supabase
+      .channel('scheduled_projects_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'scheduled_projects'
+        },
+        () => {
+          refetchScheduledProjects();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [refetchScheduledProjects]);
 
   const handleAddProject = async (day: number, project: Project) => {
     try {
@@ -95,8 +105,8 @@ export function useCalendar() {
       ));
       
       await addProjectToCalendar(project, scheduleDate, project.time, project.section);
-      
       await refetchScheduledProjects();
+      
       toast({
         title: "Succès",
         description: "Le chantier a été planifié avec succès",
@@ -112,10 +122,14 @@ export function useCalendar() {
 
   const handleDeleteProject = async (scheduleId: string) => {
     try {
+      const user = await getCurrentUser();
+      if (!user) throw new Error("User not authenticated");
+
       const { error } = await supabase
         .from('scheduled_projects')
         .delete()
-        .eq('id', scheduleId);
+        .eq('id', scheduleId)
+        .eq('user_id', user.id);
 
       if (error) throw error;
 
