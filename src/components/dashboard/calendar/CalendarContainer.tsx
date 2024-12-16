@@ -17,9 +17,11 @@ export function CalendarContainer() {
   const { data: projects = [] } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
+      const { data: user } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from('projects')
-        .select('*');
+        .select('*')
+        .eq('user_id', user.user?.id);
       
       if (error) throw error;
       
@@ -34,12 +36,14 @@ export function CalendarContainer() {
   const { data: scheduledProjects = [] } = useQuery({
     queryKey: ['scheduledProjects'],
     queryFn: async () => {
+      const { data: user } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from('scheduled_projects')
         .select(`
           *,
           project:projects(*)
-        `);
+        `)
+        .eq('user_id', user.user?.id);
       
       if (error) throw error;
       
@@ -63,6 +67,7 @@ export function CalendarContainer() {
 
   const handleAddProject = async (day: number, project: Project) => {
     try {
+      const { data: user } = await supabase.auth.getUser();
       const scheduleDate = new Date(Date.UTC(
         currentDate.getFullYear(),
         currentDate.getMonth(),
@@ -74,7 +79,7 @@ export function CalendarContainer() {
         .insert([{
           project_id: project.id,
           schedule_date: scheduleDate.toISOString().split('T')[0],
-          user_id: DEFAULT_USER_ID,
+          user_id: user.user?.id,
           time: project.time,
           section: project.section
         }]);

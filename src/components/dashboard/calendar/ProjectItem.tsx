@@ -43,19 +43,24 @@ export function ProjectItem({
               ? "bg-green-500"
               : project.color === "red"
               ? "bg-red-500"
-              : project.color === "magenta"
-              ? "bg-[#D946EF]"
-              : project.color === "orange"
-              ? "bg-[#F97316]"
-              : project.color === "ocean"
-              ? "bg-[#0EA5E9]"
-              : project.color === "purple"
-              ? "bg-[#8B5CF6]"
               : "bg-gray-500"
           }`}
         >
-          <div className="truncate">
-            {project.title}
+          <div className="space-y-1">
+            <div className="truncate font-medium">
+              {project.title}
+            </div>
+            <div className="flex items-center gap-2 text-[10px] opacity-90">
+              {project.window_cleaning && project.window_cleaning.length > 0 && (
+                <span className="flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-blue-200"></span>
+                  Vitres
+                </span>
+              )}
+              {project.time && (
+                <span>{project.time}</span>
+              )}
+            </div>
           </div>
           <div className="flex items-center justify-end gap-1">
             <button
