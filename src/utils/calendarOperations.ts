@@ -8,11 +8,9 @@ export const toggleProjectComplete = async (scheduleId: string, currentCompleted
 
   const { error } = await supabase
     .from('scheduled_projects')
-    .update({ 
-      completed: !currentCompleted,
-      user_id: user.id
-    })
-    .eq('id', scheduleId);
+    .update({ completed: !currentCompleted })
+    .eq('id', scheduleId)
+    .eq('user_id', user.id);
 
   if (error) throw error;
 };
@@ -21,23 +19,11 @@ export const updateProjectTime = async (scheduleId: string, time: string) => {
   const user = await getCurrentUser();
   if (!user) throw new Error("User not authenticated");
 
-  // First, get the existing record
-  const { data: existingProject } = await supabase
-    .from('scheduled_projects')
-    .select('*')
-    .eq('id', scheduleId)
-    .single();
-
-  if (!existingProject) throw new Error("Project not found");
-
   const { error } = await supabase
     .from('scheduled_projects')
-    .update({ 
-      ...existingProject,
-      time: time,
-      user_id: user.id
-    })
-    .eq('id', scheduleId);
+    .update({ time: time })
+    .eq('id', scheduleId)
+    .eq('user_id', user.id);
 
   if (error) throw error;
 };
@@ -46,23 +32,11 @@ export const updateProjectSection = async (scheduleId: string, section: 'morning
   const user = await getCurrentUser();
   if (!user) throw new Error("User not authenticated");
 
-  // First, get the existing record
-  const { data: existingProject } = await supabase
-    .from('scheduled_projects')
-    .select('*')
-    .eq('id', scheduleId)
-    .single();
-
-  if (!existingProject) throw new Error("Project not found");
-
   const { error } = await supabase
     .from('scheduled_projects')
-    .update({ 
-      ...existingProject,
-      section: section,
-      user_id: user.id
-    })
-    .eq('id', scheduleId);
+    .update({ section: section })
+    .eq('id', scheduleId)
+    .eq('user_id', user.id);
 
   if (error) throw error;
 };
@@ -82,9 +56,9 @@ export const addProjectToCalendar = async (
       project_id: project.id,
       schedule_date: scheduleDate.toISOString(),
       user_id: user.id,
-      time: time,
-      section: section || 'morning', // Default to morning if no section provided
-      completed: false // Explicitly set default value
+      time: time || null,
+      section: section || 'morning',
+      completed: false
     }]);
 
   if (error) throw error;
