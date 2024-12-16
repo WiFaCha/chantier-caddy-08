@@ -21,9 +21,19 @@ export const updateProjectTime = async (scheduleId: string, time: string) => {
   const user = await getCurrentUser();
   if (!user) throw new Error("User not authenticated");
 
+  // First, get the existing record
+  const { data: existingProject } = await supabase
+    .from('scheduled_projects')
+    .select('*')
+    .eq('id', scheduleId)
+    .single();
+
+  if (!existingProject) throw new Error("Project not found");
+
   const { error } = await supabase
     .from('scheduled_projects')
     .update({ 
+      ...existingProject,
       time: time,
       user_id: user.id
     })
@@ -36,7 +46,7 @@ export const updateProjectSection = async (scheduleId: string, section: 'morning
   const user = await getCurrentUser();
   if (!user) throw new Error("User not authenticated");
 
-  // First, get the existing record to preserve all fields
+  // First, get the existing record
   const { data: existingProject } = await supabase
     .from('scheduled_projects')
     .select('*')
@@ -58,10 +68,10 @@ export const updateProjectSection = async (scheduleId: string, section: 'morning
 };
 
 export const addProjectToCalendar = async (
-  project: Project,
+  project: Project, 
   scheduleDate: Date,
-  time: string | undefined,
-  section: 'morning' | 'afternoon' | undefined
+  time?: string,
+  section?: 'morning' | 'afternoon'
 ) => {
   const user = await getCurrentUser();
   if (!user) throw new Error("User not authenticated");
@@ -70,10 +80,11 @@ export const addProjectToCalendar = async (
     .from('scheduled_projects')
     .insert([{
       project_id: project.id,
-      schedule_date: scheduleDate.toISOString().split('T')[0],
+      schedule_date: scheduleDate.toISOString(),
       user_id: user.id,
       time: time,
-      section: section || 'morning' // Default to morning if no section provided
+      section: section || 'morning', // Default to morning if no section provided
+      completed: false // Explicitly set default value
     }]);
 
   if (error) throw error;
