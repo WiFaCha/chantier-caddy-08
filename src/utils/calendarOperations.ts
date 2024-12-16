@@ -1,6 +1,9 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Project } from "@/types/calendar";
 
+// Using a default user ID since authentication has been removed
+const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000000";
+
 export const toggleProjectComplete = async (scheduleId: string, currentCompleted: boolean) => {
   const { error } = await supabase
     .from('scheduled_projects')
@@ -41,7 +44,8 @@ export const addProjectToCalendar = async (
       schedule_date: scheduleDate.toISOString(),
       time: time || null,
       section: section,
-      completed: false
+      completed: false,
+      user_id: DEFAULT_USER_ID
     }]);
 
   if (error) throw error;
