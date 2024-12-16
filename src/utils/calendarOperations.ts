@@ -45,10 +45,22 @@ export const addProjectToCalendar = async (
   project: Project, 
   scheduleDate: Date,
   time?: string,
-  section?: 'morning' | 'afternoon'
+  section: 'morning' | 'afternoon' = 'morning'
 ) => {
   const user = await getCurrentUser();
   if (!user) throw new Error("User not authenticated");
+
+  // First check if user owns this project
+  const { data: projectData, error: projectError } = await supabase
+    .from('projects')
+    .select('id')
+    .eq('id', project.id)
+    .eq('user_id', user.id)
+    .single();
+
+  if (projectError || !projectData) {
+    throw new Error("Project not found or unauthorized");
+  }
 
   const { error } = await supabase
     .from('scheduled_projects')
@@ -57,7 +69,7 @@ export const addProjectToCalendar = async (
       schedule_date: scheduleDate.toISOString(),
       user_id: user.id,
       time: time || null,
-      section: section || 'morning',
+      section: section,
       completed: false
     }]);
 
