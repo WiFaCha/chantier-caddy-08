@@ -7,7 +7,10 @@ const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000000";
 export const toggleProjectComplete = async (scheduleId: string, currentCompleted: boolean) => {
   const { error } = await supabase
     .from('scheduled_projects')
-    .update({ completed: !currentCompleted })
+    .update({ 
+      completed: !currentCompleted,
+      user_id: DEFAULT_USER_ID 
+    })
     .eq('id', scheduleId);
 
   if (error) throw error;
@@ -16,7 +19,10 @@ export const toggleProjectComplete = async (scheduleId: string, currentCompleted
 export const updateProjectTime = async (scheduleId: string, time: string) => {
   const { error } = await supabase
     .from('scheduled_projects')
-    .update({ time })
+    .update({ 
+      time,
+      user_id: DEFAULT_USER_ID 
+    })
     .eq('id', scheduleId);
 
   if (error) throw error;
@@ -25,7 +31,10 @@ export const updateProjectTime = async (scheduleId: string, time: string) => {
 export const updateProjectSection = async (scheduleId: string, section: 'morning' | 'afternoon') => {
   const { error } = await supabase
     .from('scheduled_projects')
-    .update({ section })
+    .update({ 
+      section,
+      user_id: DEFAULT_USER_ID 
+    })
     .eq('id', scheduleId);
 
   if (error) throw error;
@@ -55,7 +64,8 @@ export const deleteScheduledProject = async (scheduleId: string) => {
   const { error } = await supabase
     .from('scheduled_projects')
     .delete()
-    .eq('id', scheduleId);
+    .eq('id', scheduleId)
+    .eq('user_id', DEFAULT_USER_ID);
 
   if (error) throw error;
 };
