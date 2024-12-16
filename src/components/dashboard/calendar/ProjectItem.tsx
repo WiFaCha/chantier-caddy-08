@@ -23,6 +23,12 @@ export function ProjectItem({
   onTimeChange,
   onSectionChange
 }: ProjectItemProps) {
+  const shouldShowWindowCleaning = () => {
+    if (!project.window_cleaning || project.window_cleaning.length === 0) return false;
+    const currentMonth = (project.date.getMonth() + 1).toString();
+    return project.window_cleaning.includes(currentMonth);
+  };
+
   return (
     <Draggable
       key={project.scheduleId}
@@ -50,8 +56,8 @@ export function ProjectItem({
             <div className="truncate font-medium">
               {project.title}
             </div>
-            <div className="flex items-center gap-2 text-[10px] opacity-90">
-              {project.window_cleaning && project.window_cleaning.length > 0 && (
+            <div className="flex flex-col gap-1 text-[10px] opacity-90">
+              {shouldShowWindowCleaning() && (
                 <span className="flex items-center gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-blue-200"></span>
                   Vitres

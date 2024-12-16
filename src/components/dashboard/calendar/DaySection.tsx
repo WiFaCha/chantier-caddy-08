@@ -42,16 +42,22 @@ export function DaySection({
               <DialogTitle>Ajouter un chantier ({title})</DialogTitle>
             </DialogHeader>
             <div className="space-y-2 max-h-[60vh] overflow-y-auto">
-              {catalogProjects.map((project) => (
-                <Button
-                  key={project.id}
-                  variant="ghost"
-                  className="w-full justify-start"
-                  onClick={() => onAddProject(project)}
-                >
-                  {project.title}
-                </Button>
-              ))}
+              {catalogProjects.length === 0 ? (
+                <div className="text-sm text-muted-foreground">
+                  Aucun chantier disponible
+                </div>
+              ) : (
+                catalogProjects.map((project) => (
+                  <Button
+                    key={project.id}
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => onAddProject(project)}
+                  >
+                    {project.title}
+                  </Button>
+                ))
+              )}
             </div>
           </DialogContent>
         </Dialog>
