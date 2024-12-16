@@ -39,14 +39,14 @@ export const addProjectToCalendar = async (
 ) => {
   const { error } = await supabase
     .from('scheduled_projects')
-    .insert({
+    .insert([{
       project_id: project.id,
       schedule_date: scheduleDate.toISOString(),
       time: time || null,
       section: section,
       completed: false,
       user_id: DEFAULT_USER_ID
-    });
+    }]);
 
   if (error) throw error;
 };
