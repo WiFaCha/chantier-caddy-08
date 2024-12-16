@@ -1,28 +1,29 @@
 import { Button } from "@/components/ui/button";
 import {
-  Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 type Mode = "login" | "signup" | "reset";
 
-export function LoginForm() {
+interface LoginFormProps {
+  onSuccess?: () => void;
+}
+
+export function LoginForm({ onSuccess }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [mode, setMode] = useState<Mode>("login");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,23 +38,17 @@ export function LoginForm() {
         });
         
         if (error) {
-          if (error.message === "Invalid login credentials") {
-            toast({
-              title: "Erreur de connexion",
-              description: "Email ou mot de passe incorrect",
-              variant: "destructive",
-            });
-          } else {
-            toast({
-              title: "Erreur",
-              description: error.message,
-              variant: "destructive",
-            });
-          }
+          toast({
+            title: "Erreur de connexion",
+            description: error.message === "Invalid login credentials" 
+              ? "Email ou mot de passe incorrect"
+              : error.message,
+            variant: "destructive",
+          });
           return;
         }
         
-        navigate("/");
+        onSuccess?.();
         toast({
           title: "Connexion réussie",
           description: "Vous êtes maintenant connecté",
@@ -117,8 +112,8 @@ export function LoginForm() {
   };
 
   return (
-    <Card className="w-[350px]">
-      <CardHeader>
+    <div className="p-4">
+      <CardHeader className="p-0 mb-4">
         <CardTitle>
           {mode === "login"
             ? "Connexion"
@@ -134,7 +129,7 @@ export function LoginForm() {
             : "Entrez votre email pour réinitialiser votre mot de passe"}
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -179,7 +174,7 @@ export function LoginForm() {
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="flex flex-col gap-2">
+      <CardFooter className="flex flex-col gap-2 p-0 mt-4">
         {mode === "login" && (
           <>
             <Button
@@ -208,6 +203,6 @@ export function LoginForm() {
           </Button>
         )}
       </CardFooter>
-    </Card>
+    </div>
   );
 }
