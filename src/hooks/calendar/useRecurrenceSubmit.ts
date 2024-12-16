@@ -2,7 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Project } from "@/types/calendar";
-import { RecurrenceFormValues } from "../components/projects/recurrence/types";
+import { RecurrenceFormValues } from "@/components/projects/recurrence/types";
 
 const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000000";
 
