@@ -9,7 +9,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { ProjectFilter } from "./ProjectFilter";
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { ExportPDFButton } from "./ExportPDFButton";
 
 interface CalendarViewProps {
   currentDate: Date;
@@ -42,6 +43,7 @@ export function CalendarView({
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
+  const calendarRef = useRef<HTMLDivElement>(null);
 
   const handleDragEnd = async (result: DropResult) => {
     if (!result.destination) return;
@@ -105,7 +107,10 @@ export function CalendarView({
   return (
     <Card className="col-span-4 w-full">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 flex-wrap gap-4">
-        <CardTitle>Calendrier</CardTitle>
+        <div className="flex items-center gap-4">
+          <CardTitle>Calendrier</CardTitle>
+          <ExportPDFButton calendarRef={calendarRef} viewMode={viewMode} />
+        </div>
         <CalendarNavigation
           currentDate={currentDate}
           viewMode={viewMode}
@@ -138,19 +143,21 @@ export function CalendarView({
           selectedProjects={selectedProjects}
           onToggleProject={handleToggleProject}
         />
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <CalendarGrid
-            days={filteredDays}
-            projects={projects}
-            scheduledProjects={filteredScheduledProjects}
-            onAddProject={onAddProject}
-            onDeleteProject={onDeleteProject}
-            onToggleComplete={onToggleComplete}
-            onTimeChange={onTimeChange}
-            onSectionChange={onSectionChange}
-            isMobile={isMobile}
-          />
-        </DragDropContext>
+        <div ref={calendarRef}>
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <CalendarGrid
+              days={filteredDays}
+              projects={projects}
+              scheduledProjects={filteredScheduledProjects}
+              onAddProject={onAddProject}
+              onDeleteProject={onDeleteProject}
+              onToggleComplete={onToggleComplete}
+              onTimeChange={onTimeChange}
+              onSectionChange={onSectionChange}
+              isMobile={isMobile}
+            />
+          </DragDropContext>
+        </div>
       </CardContent>
     </Card>
   );

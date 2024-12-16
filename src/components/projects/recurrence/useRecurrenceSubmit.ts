@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Project } from "@/types/calendar";
 import { RecurrenceFormValues } from "./types";
 
+const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000000";
+
 export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -42,18 +44,19 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
         currentDate.setDate(currentDate.getDate() + 1);
       }
 
-      const promises = scheduleDates.map((date) =>
-        supabase
-          .from('scheduled_projects')
-          .insert({
-            project_id: project.id,
-            schedule_date: date.toISOString(),
-            section: values.section,
-            user_id: project.user_id
-          })
-      );
+      const scheduledProjects = scheduleDates.map((date) => ({
+        project_id: project.id,
+        schedule_date: date.toISOString(),
+        section: values.section,
+        user_id: DEFAULT_USER_ID,
+        completed: false
+      }));
 
-      await Promise.all(promises);
+      const { error } = await supabase
+        .from('scheduled_projects')
+        .insert(scheduledProjects);
+
+      if (error) throw error;
 
       queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
       toast({
