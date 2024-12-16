@@ -21,7 +21,7 @@ export const updateProjectTime = async (scheduleId: string, time: string) => {
 
   const { error } = await supabase
     .from('scheduled_projects')
-    .update({ time: time })
+    .update({ time })
     .eq('id', scheduleId)
     .eq('user_id', user.id);
 
@@ -34,7 +34,7 @@ export const updateProjectSection = async (scheduleId: string, section: 'morning
 
   const { error } = await supabase
     .from('scheduled_projects')
-    .update({ section: section })
+    .update({ section })
     .eq('id', scheduleId)
     .eq('user_id', user.id);
 
