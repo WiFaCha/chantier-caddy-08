@@ -2,17 +2,17 @@ import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 import jsPDF from "jspdf";
 import { toast } from "sonner";
-import { getProjectsForDay } from "@/utils/calendarUtils";
+import { ScheduledProject } from "@/types/calendar";
 
 interface ExportPDFButtonProps {
   calendarRef: React.RefObject<HTMLDivElement>;
   viewMode: "month" | "week" | "twoWeeks";
+  scheduledProjects: ScheduledProject[];
+  currentDate: Date;
 }
 
-export function ExportPDFButton({ calendarRef, viewMode }: ExportPDFButtonProps) {
+export function ExportPDFButton({ calendarRef, viewMode, scheduledProjects, currentDate }: ExportPDFButtonProps) {
   const handleExport = () => {
-    if (!calendarRef.current) return;
-
     try {
       toast.loading("Génération du PDF en cours...");
       
@@ -28,23 +28,12 @@ export function ExportPDFButton({ calendarRef, viewMode }: ExportPDFButtonProps)
       const pageHeight = pdf.internal.pageSize.getHeight();
       const margin = 10;
       
-      // En-tête
+      // En-tête avec le mois et l'année
+      const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+      const monthYear = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
       pdf.setFont("helvetica", "bold");
-      pdf.text("Calendrier", margin, margin + 5);
+      pdf.text(monthYear, margin, margin + 5);
       pdf.setFont("helvetica", "normal");
-      
-      // Création du tableau
-      const days = Array.from(calendarRef.current.querySelectorAll('[class*="Card"]')).map(day => {
-        const dateHeader = day.querySelector('time')?.textContent || '';
-        const morningProjects = Array.from(day.querySelectorAll('[class*="morning"]')).map(p => p.textContent);
-        const afternoonProjects = Array.from(day.querySelectorAll('[class*="afternoon"]')).map(p => p.textContent);
-        
-        return {
-          date: dateHeader,
-          morning: morningProjects.join('\n'),
-          afternoon: afternoonProjects.join('\n')
-        };
-      });
 
       // Configuration du tableau
       const columns = ['Date', 'Matin', 'Après-midi'];
@@ -57,11 +46,27 @@ export function ExportPDFButton({ calendarRef, viewMode }: ExportPDFButtonProps)
         pdf.text(col, margin + (i * columnWidth) + 5, margin + 16);
       });
 
+      // Regrouper les projets par date
+      const projectsByDate = scheduledProjects.reduce((acc, project) => {
+        const date = new Date(project.date);
+        const dateStr = date.toLocaleDateString();
+        if (!acc[dateStr]) {
+          acc[dateStr] = { morning: [], afternoon: [] };
+        }
+        if (project.section === 'morning') {
+          acc[dateStr].morning.push(project);
+        } else {
+          acc[dateStr].afternoon.push(project);
+        }
+        return acc;
+      }, {} as Record<string, { morning: ScheduledProject[], afternoon: ScheduledProject[] }>);
+
       // Contenu du tableau
       let yPos = margin + 25;
       const rowHeight = 20;
+      const lineHeight = 5;
 
-      days.forEach((day, index) => {
+      Object.entries(projectsByDate).forEach(([dateStr, { morning, afternoon }]) => {
         if (yPos + rowHeight > pageHeight - margin) {
           pdf.addPage();
           yPos = margin + 10;
@@ -71,10 +76,20 @@ export function ExportPDFButton({ calendarRef, viewMode }: ExportPDFButtonProps)
         pdf.setDrawColor(200, 200, 200);
         pdf.line(margin, yPos, pageWidth - margin, yPos);
         
-        // Contenu des cellules
-        pdf.text(day.date, margin + 5, yPos + 5);
-        pdf.text(day.morning || '-', margin + columnWidth + 5, yPos + 5);
-        pdf.text(day.afternoon || '-', margin + (2 * columnWidth) + 5, yPos + 5);
+        // Date
+        pdf.text(dateStr, margin + 5, yPos + 5);
+
+        // Projets du matin
+        const morningText = morning
+          .map(p => `${p.title}${p.time ? ` (${p.time})` : ''}${p.completed ? ' ✓' : ''}`)
+          .join('\n');
+        pdf.text(morningText || '-', margin + columnWidth + 5, yPos + 5);
+
+        // Projets de l'après-midi
+        const afternoonText = afternoon
+          .map(p => `${p.title}${p.time ? ` (${p.time})` : ''}${p.completed ? ' ✓' : ''}`)
+          .join('\n');
+        pdf.text(afternoonText || '-', margin + (2 * columnWidth) + 5, yPos + 5);
 
         yPos += rowHeight;
       });

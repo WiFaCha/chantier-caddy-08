@@ -109,7 +109,12 @@ export function CalendarView({
       <CardHeader className="flex flex-row items-center justify-between space-y-0 flex-wrap gap-4">
         <div className="flex items-center gap-4">
           <CardTitle>Calendrier</CardTitle>
-          <ExportPDFButton calendarRef={calendarRef} viewMode={viewMode} />
+          <ExportPDFButton 
+            calendarRef={calendarRef} 
+            viewMode={viewMode} 
+            scheduledProjects={scheduledProjects}
+            currentDate={currentDate}
+          />
         </div>
         <CalendarNavigation
           currentDate={currentDate}

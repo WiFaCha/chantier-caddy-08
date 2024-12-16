@@ -1,19 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { getCurrentUser } from "@/utils/supabaseUtils";
 import { Project } from "@/types/calendar";
+
+const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000000";
 
 export function useProjectsQuery() {
   return useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
-      const user = await getCurrentUser();
-      if (!user) return [];
-
       const { data, error } = await supabase
         .from('projects')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', DEFAULT_USER_ID);
       
       if (error) throw error;
       
