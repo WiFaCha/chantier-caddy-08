@@ -8,7 +8,8 @@ export function useProjectsQuery() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('projects')
-        .select('*');
+        .select('*')
+        .or('user_id.eq.00000000-0000-0000-0000-000000000000,user_id.eq.6e538730-8037-44a9-bdd4-ae252d551404');
       
       if (error) throw error;
       
