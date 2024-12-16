@@ -1,6 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Project } from "@/types/calendar";
-import { getCurrentUser } from "./supabaseUtils";
 
 export const toggleProjectComplete = async (scheduleId: string, currentCompleted: boolean) => {
   const { error } = await supabase
@@ -35,15 +34,11 @@ export const addProjectToCalendar = async (
   time?: string,
   section: 'morning' | 'afternoon' = 'morning'
 ) => {
-  const user = await getCurrentUser();
-  if (!user) throw new Error("User not authenticated");
-
   const { error } = await supabase
     .from('scheduled_projects')
     .insert([{
       project_id: project.id,
       schedule_date: scheduleDate.toISOString(),
-      user_id: user.id,
       time: time || null,
       section: section,
       completed: false

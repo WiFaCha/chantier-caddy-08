@@ -14,7 +14,7 @@ export function SimpleRecurrenceForm({ onSubmit }: SimpleRecurrenceFormProps) {
     defaultValues: {
       weekdays: [],
       duration: "1week",
-      section: "morning",
+      section: "morning", // Default to morning
     },
   });
 
@@ -58,26 +58,6 @@ export function SimpleRecurrenceForm({ onSubmit }: SimpleRecurrenceFormProps) {
                 {day.label}
               </Button>
             ))}
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Période</label>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant={form.watch("section") === "morning" ? "default" : "outline"}
-              onClick={() => form.setValue("section", "morning")}
-            >
-              AM
-            </Button>
-            <Button
-              type="button"
-              variant={form.watch("section") === "afternoon" ? "default" : "outline"}
-              onClick={() => form.setValue("section", "afternoon")}
-            >
-              PM
-            </Button>
           </div>
         </div>
 
