@@ -5,9 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { CalendarView } from "./CalendarView";
 import { Project } from "@/types/calendar";
 
-// Définir un ID utilisateur par défaut
-const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000000";
-
 export function CalendarContainer() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"month" | "week" | "twoWeeks">("month");
@@ -17,13 +14,22 @@ export function CalendarContainer() {
   const { data: projects = [] } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
-      const { data: user } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.log("No authenticated user found");
+        return [];
+      }
+
       const { data, error } = await supabase
         .from('projects')
         .select('*')
-        .eq('user_id', user.user?.id);
+        .eq('user_id', user.id);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching projects:", error);
+        throw error;
+      }
       
       return (data || []).map(project => ({
         ...project,
@@ -36,18 +42,27 @@ export function CalendarContainer() {
   const { data: scheduledProjects = [] } = useQuery({
     queryKey: ['scheduledProjects'],
     queryFn: async () => {
-      const { data: user } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.log("No authenticated user found");
+        return [];
+      }
+
       const { data, error } = await supabase
         .from('scheduled_projects')
         .select(`
           *,
           project:projects(*)
         `)
-        .eq('user_id', user.user?.id);
+        .eq('user_id', user.id);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching scheduled projects:", error);
+        throw error;
+      }
       
-      return data.map((sp: any) => {
+      return (data || []).map((sp: any) => {
         const date = new Date(sp.schedule_date);
         date.setUTCHours(0, 0, 0, 0);
         
@@ -61,13 +76,23 @@ export function CalendarContainer() {
           time: sp.time,
           section: sp.section
         };
-      }) || [];
+      });
     },
   });
 
   const handleAddProject = async (day: number, project: Project) => {
     try {
-      const { data: user } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour ajouter un projet",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const scheduleDate = new Date(Date.UTC(
         currentDate.getFullYear(),
         currentDate.getMonth(),
@@ -79,7 +104,7 @@ export function CalendarContainer() {
         .insert([{
           project_id: project.id,
           schedule_date: scheduleDate.toISOString().split('T')[0],
-          user_id: user.user?.id,
+          user_id: user.id,
           time: project.time,
           section: project.section
         }]);
@@ -130,7 +155,7 @@ export function CalendarContainer() {
         .from('scheduled_projects')
         .update({ 
           completed: !currentProject?.completed,
-          user_id: DEFAULT_USER_ID
+          user_id: user.id
         })
         .eq('id', scheduleId);
 
@@ -152,7 +177,7 @@ export function CalendarContainer() {
         .from('scheduled_projects')
         .update({ 
           time: time,
-          user_id: DEFAULT_USER_ID
+          user_id: user.id
         })
         .eq('id', scheduleId);
 
@@ -174,7 +199,7 @@ export function CalendarContainer() {
         .from('scheduled_projects')
         .update({ 
           section: section,
-          user_id: DEFAULT_USER_ID
+          user_id: user.id
         })
         .eq('id', scheduleId);
 
