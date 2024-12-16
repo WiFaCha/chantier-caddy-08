@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RecurrenceFormValues, recurrenceFormSchema } from "./types";
 
@@ -15,6 +14,7 @@ export function SimpleRecurrenceForm({ onSubmit }: SimpleRecurrenceFormProps) {
     defaultValues: {
       weekdays: [],
       duration: "1week",
+      section: "morning",
     },
   });
 
@@ -58,6 +58,26 @@ export function SimpleRecurrenceForm({ onSubmit }: SimpleRecurrenceFormProps) {
                 {day.label}
               </Button>
             ))}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Période</label>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant={form.watch("section") === "morning" ? "default" : "outline"}
+              onClick={() => form.setValue("section", "morning")}
+            >
+              AM
+            </Button>
+            <Button
+              type="button"
+              variant={form.watch("section") === "afternoon" ? "default" : "outline"}
+              onClick={() => form.setValue("section", "afternoon")}
+            >
+              PM
+            </Button>
           </div>
         </div>
 

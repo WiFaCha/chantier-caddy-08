@@ -4,8 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Project } from "@/types/calendar";
 import { RecurrenceFormValues } from "./types";
 
-const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000000";
-
 export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -49,8 +47,9 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
           .from('scheduled_projects')
           .insert({
             project_id: project.id,
-            schedule_date: date.toISOString().split('T')[0],
-            user_id: DEFAULT_USER_ID
+            schedule_date: date.toISOString(),
+            section: values.section,
+            user_id: project.user_id
           })
       );
 
