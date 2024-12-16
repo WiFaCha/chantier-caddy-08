@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { getCurrentUser } from "@/utils/supabaseUtils";
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -10,16 +9,12 @@ export function useScheduledProjectsQuery() {
   const { data: scheduledProjects = [], refetch: refetchScheduledProjects } = useQuery({
     queryKey: ['scheduledProjects'],
     queryFn: async () => {
-      const user = await getCurrentUser();
-      if (!user) return [];
-
       const { data, error } = await supabase
         .from('scheduled_projects')
         .select(`
           *,
           project:projects(*)
-        `)
-        .eq('user_id', user.id);
+        `);
       
       if (error) throw error;
       
