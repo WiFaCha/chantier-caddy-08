@@ -63,3 +63,16 @@ export const addProjectToCalendar = async (
 
   if (error) throw error;
 };
+
+export const deleteScheduledProject = async (scheduleId: string) => {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("User not authenticated");
+
+  const { error } = await supabase
+    .from('scheduled_projects')
+    .delete()
+    .eq('id', scheduleId)
+    .eq('user_id', user.id);
+
+  if (error) throw error;
+};
