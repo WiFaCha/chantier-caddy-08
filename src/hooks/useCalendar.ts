@@ -70,11 +70,11 @@ export function useCalendar() {
         };
       });
     },
-    staleTime: 0, // Toujours considérer les données comme périmées
-    cacheTime: 0, // Ne pas mettre en cache les données
+    staleTime: 0, // Always consider data as stale
+    gcTime: 0, // Don't cache the data (replaces deprecated cacheTime)
   });
 
-  // Écouter les changements en temps réel
+  // Listen to real-time changes
   useEffect(() => {
     const channel = supabase
       .channel('scheduled_projects_changes')

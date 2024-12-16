@@ -8,11 +8,9 @@ export const toggleProjectComplete = async (scheduleId: string, currentCompleted
 
   const { error } = await supabase
     .from('scheduled_projects')
-    .update({ 
-      completed: !currentCompleted,
-      user_id: user.id 
-    })
-    .eq('id', scheduleId);
+    .update({ completed: !currentCompleted })
+    .eq('id', scheduleId)
+    .eq('user_id', user.id);
 
   if (error) throw error;
 };
@@ -23,11 +21,9 @@ export const updateProjectTime = async (scheduleId: string, time: string) => {
 
   const { error } = await supabase
     .from('scheduled_projects')
-    .update({ 
-      time,
-      user_id: user.id
-    })
-    .eq('id', scheduleId);
+    .update({ time })
+    .eq('id', scheduleId)
+    .eq('user_id', user.id);
 
   if (error) throw error;
 };
@@ -38,11 +34,9 @@ export const updateProjectSection = async (scheduleId: string, section: 'morning
 
   const { error } = await supabase
     .from('scheduled_projects')
-    .update({ 
-      section,
-      user_id: user.id
-    })
-    .eq('id', scheduleId);
+    .update({ section })
+    .eq('id', scheduleId)
+    .eq('user_id', user.id);
 
   if (error) throw error;
 };
