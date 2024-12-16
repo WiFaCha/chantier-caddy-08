@@ -1,16 +1,11 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DragDropContext, DropResult } from "react-beautiful-dnd";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Project, ScheduledProject } from "@/types/calendar";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { CalendarNavigation } from "../CalendarNavigation";
-import { CalendarGrid } from "../CalendarGrid";
 import { getDaysToDisplay } from "@/utils/calendarUtils";
-import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
-import { useToast } from "@/components/ui/use-toast";
 import { ProjectFilter } from "./ProjectFilter";
 import { useState, useRef } from "react";
-import { ExportPDFButton } from "./ExportPDFButton";
+import { CalendarHeader } from "./CalendarHeader";
+import { CalendarContent } from "./CalendarContent";
 
 interface CalendarViewProps {
   currentDate: Date;
@@ -39,44 +34,9 @@ export function CalendarView({
   onTimeChange,
   onSectionChange
 }: CalendarViewProps) {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
   const isMobile = useIsMobile();
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
   const calendarRef = useRef<HTMLDivElement>(null);
-
-  const handleDragEnd = async (result: DropResult) => {
-    if (!result.destination) return;
-
-    const { source, destination, draggableId } = result;
-    const sourceDay = parseInt(source.droppableId);
-    const destinationDay = parseInt(destination.droppableId);
-
-    if (sourceDay === destinationDay) return;
-
-    try {
-      const projectToMove = scheduledProjects.find(p => p.scheduleId === draggableId);
-      if (!projectToMove) return;
-
-      const newDate = new Date(projectToMove.date);
-      newDate.setDate(destinationDay);
-
-      const { error } = await supabase
-        .from('scheduled_projects')
-        .update({ schedule_date: newDate.toISOString() })
-        .eq('id', draggableId);
-
-      if (error) throw error;
-
-      queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
-    } catch (error: any) {
-      toast({
-        title: "Erreur",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
 
   const handleToggleProject = (projectId: string) => {
     setSelectedProjects(prev => 
@@ -106,40 +66,12 @@ export function CalendarView({
 
   return (
     <Card className="col-span-4 w-full">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 flex-wrap gap-4">
-        <div className="flex items-center gap-4">
-          <CardTitle>Calendrier</CardTitle>
-          <ExportPDFButton 
-            calendarRef={calendarRef} 
-            viewMode={viewMode} 
-            scheduledProjects={scheduledProjects}
-            currentDate={currentDate}
-          />
-        </div>
-        <CalendarNavigation
+      <CardHeader>
+        <CalendarHeader
           currentDate={currentDate}
           viewMode={viewMode}
-          onViewModeChange={setViewMode}
-          onPrevPeriod={() => {
-            const newDate = new Date(currentDate);
-            if (viewMode === "month") {
-              newDate.setMonth(currentDate.getMonth() - 1);
-            } else {
-              const days = viewMode === "week" ? 7 : 14;
-              newDate.setDate(currentDate.getDate() - days);
-            }
-            setCurrentDate(newDate);
-          }}
-          onNextPeriod={() => {
-            const newDate = new Date(currentDate);
-            if (viewMode === "month") {
-              newDate.setMonth(currentDate.getMonth() + 1);
-            } else {
-              const days = viewMode === "week" ? 7 : 14;
-              newDate.setDate(currentDate.getDate() + days);
-            }
-            setCurrentDate(newDate);
-          }}
+          setViewMode={setViewMode}
+          setCurrentDate={setCurrentDate}
         />
       </CardHeader>
       <CardContent className={`${isMobile ? 'px-2' : 'px-6'}`}>
@@ -149,19 +81,17 @@ export function CalendarView({
           onToggleProject={handleToggleProject}
         />
         <div ref={calendarRef}>
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <CalendarGrid
-              days={filteredDays}
-              projects={projects}
-              scheduledProjects={filteredScheduledProjects}
-              onAddProject={onAddProject}
-              onDeleteProject={onDeleteProject}
-              onToggleComplete={onToggleComplete}
-              onTimeChange={onTimeChange}
-              onSectionChange={onSectionChange}
-              isMobile={isMobile}
-            />
-          </DragDropContext>
+          <CalendarContent
+            days={filteredDays}
+            projects={projects}
+            scheduledProjects={filteredScheduledProjects}
+            onAddProject={onAddProject}
+            onDeleteProject={onDeleteProject}
+            onToggleComplete={onToggleComplete}
+            onTimeChange={onTimeChange}
+            onSectionChange={onSectionChange}
+            isMobile={isMobile}
+          />
         </div>
       </CardContent>
     </Card>
