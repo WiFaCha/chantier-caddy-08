@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { ProjectListHeader } from "./ProjectListHeader";
 import { ProjectListContent } from "./ProjectListContent";
+import { getCurrentUser } from "@/utils/supabaseUtils";
 
 export function ProjectList() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -16,9 +17,20 @@ export function ProjectList() {
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
+      const user = await getCurrentUser();
+      if (!user) {
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour voir vos chantiers",
+          variant: "destructive",
+        });
+        return [];
+      }
+
       const { data, error } = await supabase
         .from('projects')
-        .select('*');
+        .select('*')
+        .eq('user_id', user.id);
       
       if (error) throw error;
       
@@ -32,11 +44,21 @@ export function ProjectList() {
 
   const handleCreateProject = async (data: Omit<Project, "id" | "user_id">) => {
     try {
+      const user = await getCurrentUser();
+      if (!user) {
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour créer un chantier",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('projects')
         .insert([{
           ...data,
-          user_id: (await supabase.auth.getUser()).data.user?.id
+          user_id: user.id
         }]);
 
       if (error) throw error;
@@ -58,9 +80,22 @@ export function ProjectList() {
 
   const handleUpdateProject = async (id: string, data: Omit<Project, "id" | "user_id">) => {
     try {
+      const user = await getCurrentUser();
+      if (!user) {
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour modifier un chantier",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('projects')
-        .update(data)
+        .update({
+          ...data,
+          user_id: user.id
+        })
         .eq('id', id);
 
       if (error) throw error;
@@ -81,10 +116,21 @@ export function ProjectList() {
 
   const handleDeleteProject = async (id: string) => {
     try {
+      const user = await getCurrentUser();
+      if (!user) {
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour supprimer un chantier",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('projects')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
 
       if (error) throw error;
 
