@@ -51,11 +51,11 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
 
       // On utilise des timestamps pour l'itération
       while (currentTimestamp < endTimestamp) {
-        // On crée la date courante
-        const currentDate = new Date(currentTimestamp);
-        
         // On ajoute 24 heures en millisecondes
         currentTimestamp += 24 * 60 * 60 * 1000;
+        
+        // On crée la date courante
+        const currentDate = new Date(currentTimestamp);
         
         if (values.weekdays.includes(currentDate.getUTCDay())) {
           scheduleDates.push(new Date(currentTimestamp));
