@@ -6,76 +6,85 @@ import { RecurrenceFormValues } from "@/components/projects/recurrence/types";
 
 const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000000";
 
+const getDurationDays = (duration: "1week" | "2weeks" | "1month" | "3months"): number => {
+  const durationMap = {
+    "1week": 7,
+    "2weeks": 14,
+    "1month": 30,
+    "3months": 90
+  };
+  return durationMap[duration] || 7;
+};
+
+const createDateRange = (startDate: Date, durationDays: number) => {
+  const startTimestamp = Date.UTC(
+    startDate.getUTCFullYear(),
+    startDate.getUTCMonth(),
+    startDate.getUTCDate(),
+    12, 0, 0, 0
+  );
+  
+  const endTimestamp = startTimestamp + (durationDays * 24 * 60 * 60 * 1000);
+  
+  return { startTimestamp, endTimestamp };
+};
+
+const generateScheduleDates = (
+  startTimestamp: number,
+  endTimestamp: number,
+  selectedWeekdays: number[]
+): Date[] => {
+  const scheduleDates: Date[] = [];
+  let currentTimestamp = startTimestamp;
+
+  while (currentTimestamp < endTimestamp) {
+    const currentDate = new Date(currentTimestamp);
+    
+    if (selectedWeekdays.includes(currentDate.getUTCDay())) {
+      scheduleDates.push(new Date(currentTimestamp));
+    }
+    
+    currentTimestamp += 24 * 60 * 60 * 1000;
+  }
+
+  return scheduleDates;
+};
+
+const createScheduledProjects = (
+  scheduleDates: Date[],
+  projectId: string,
+  section: 'morning' | 'afternoon'
+) => {
+  return scheduleDates.map((date) => ({
+    project_id: projectId,
+    schedule_date: date.toISOString(),
+    section,
+    user_id: DEFAULT_USER_ID,
+    completed: false
+  }));
+};
+
 export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const getDurationDays = (duration: "1week" | "2weeks" | "1month" | "3months") => {
-    switch (duration) {
-      case "1week":
-        return 7;
-      case "2weeks":
-        return 14;
-      case "1month":
-        return 30;
-      case "3months":
-        return 90;
-      default:
-        return 7;
-    }
-  };
-
   const handleSubmit = async (values: RecurrenceFormValues) => {
     try {
-      // On commence par obtenir la date actuelle
       const now = new Date();
-      
-      // On crée la date de début en UTC à midi
-      const startTimestamp = Date.UTC(
-        now.getUTCFullYear(),
-        now.getUTCMonth(),
-        now.getUTCDate(),
-        12, 0, 0, 0
-      );
-      
       const durationDays = getDurationDays(values.duration);
+      const { startTimestamp, endTimestamp } = createDateRange(now, durationDays);
       
-      // On calcule la date de fin
-      const endTimestamp = startTimestamp + (durationDays * 24 * 60 * 60 * 1000);
-      
-      const scheduleDates: Date[] = [];
-      let currentTimestamp = startTimestamp;
+      const scheduleDates = generateScheduleDates(
+        startTimestamp,
+        endTimestamp,
+        values.weekdays
+      );
 
-      console.log('Date de début:', new Date(startTimestamp).toISOString());
-      console.log('Date de fin:', new Date(endTimestamp).toISOString());
-
-      // On utilise des timestamps pour l'itération
-      while (currentTimestamp < endTimestamp) {
-        // On ajoute 24 heures en millisecondes
-        currentTimestamp += 24 * 60 * 60 * 1000;
-        
-        // On crée la date courante
-        const currentDate = new Date(currentTimestamp);
-        
-        if (values.weekdays.includes(currentDate.getUTCDay())) {
-          scheduleDates.push(new Date(currentTimestamp));
-        }
-      }
-
-      console.log('Dates planifiées:', scheduleDates.map(d => ({
-        iso: d.toISOString(),
-        utcDay: d.getUTCDay(),
-        localDay: d.getDay(),
-        timestamp: d.getTime()
-      })));
-
-      const scheduledProjects = scheduleDates.map((date) => ({
-        project_id: project.id,
-        schedule_date: date.toISOString(),
-        section: values.section,
-        user_id: DEFAULT_USER_ID,
-        completed: false
-      }));
+      const scheduledProjects = createScheduledProjects(
+        scheduleDates,
+        project.id,
+        values.section
+      );
 
       const { error } = await supabase
         .from('scheduled_projects')

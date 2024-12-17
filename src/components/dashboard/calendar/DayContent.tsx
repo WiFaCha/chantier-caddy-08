@@ -27,14 +27,7 @@ export function DayContent({
   day
 }: DayContentProps) {
   const formatProjectTitle = (project: ScheduledProject) => {
-    let title = project.title;
-    if (project.window_cleaning && project.window_cleaning.length > 0) {
-      title = `${title} • Vitres`;
-    }
-    if (project.time) {
-      title = `${title} (${project.time})`;
-    }
-    return title;
+    return project.title;
   };
 
   return (
