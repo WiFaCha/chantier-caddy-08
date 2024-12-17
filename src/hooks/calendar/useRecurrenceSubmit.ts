@@ -27,46 +27,45 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
 
   const handleSubmit = async (values: RecurrenceFormValues) => {
     try {
-      // On commence par obtenir la date actuelle à minuit UTC
+      // On commence par obtenir la date actuelle
       const now = new Date();
-      const startDate = new Date(Date.UTC(
+      
+      // On crée la date de début en UTC à midi
+      const startTimestamp = Date.UTC(
         now.getUTCFullYear(),
         now.getUTCMonth(),
-        now.getUTCDate()
-      ));
-
+        now.getUTCDate(),
+        12, 0, 0, 0
+      );
+      
       const durationDays = getDurationDays(values.duration);
-      const endDate = new Date(startDate);
-      endDate.setUTCDate(startDate.getUTCDate() + durationDays);
-
+      
+      // On calcule la date de fin
+      const endTimestamp = startTimestamp + (durationDays * 24 * 60 * 60 * 1000);
+      
       const scheduleDates: Date[] = [];
-      const currentDate = new Date(startDate);
+      let currentTimestamp = startTimestamp;
 
-      // Debug
-      console.log('Date de début:', startDate.toISOString());
-      console.log('Date de fin:', endDate.toISOString());
+      console.log('Date de début:', new Date(startTimestamp).toISOString());
+      console.log('Date de fin:', new Date(endTimestamp).toISOString());
 
-      while (currentDate < endDate) {
-        // On vérifie si le jour de la semaine est inclus dans les jours sélectionnés
+      // On utilise des timestamps pour l'itération
+      while (currentTimestamp < endTimestamp) {
+        const currentDate = new Date(currentTimestamp);
+        
         if (values.weekdays.includes(currentDate.getUTCDay())) {
-          // On crée une nouvelle date pour éviter les références
-          const scheduleDate = new Date(Date.UTC(
-            currentDate.getUTCFullYear(),
-            currentDate.getUTCMonth(),
-            currentDate.getUTCDate(),
-            12 // Midi UTC pour éviter les problèmes de changement de jour
-          ));
-          scheduleDates.push(scheduleDate);
+          scheduleDates.push(new Date(currentTimestamp));
         }
-        // On avance d'un jour en UTC
-        currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+        
+        // On ajoute exactement 24 heures en millisecondes
+        currentTimestamp += 24 * 60 * 60 * 1000;
       }
 
-      // Debug
       console.log('Dates planifiées:', scheduleDates.map(d => ({
         iso: d.toISOString(),
         utcDay: d.getUTCDay(),
-        localDay: d.getDay()
+        localDay: d.getDay(),
+        timestamp: d.getTime()
       })));
 
       const scheduledProjects = scheduleDates.map((date) => ({
