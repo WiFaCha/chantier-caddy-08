@@ -27,9 +27,10 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
 
   const handleSubmit = async (values: RecurrenceFormValues) => {
     try {
-      // Créer la date de début à midi pour éviter les problèmes de timezone
+      // Créer la date de début en UTC
       const startDate = new Date();
-      startDate.setHours(12, 0, 0, 0);
+      // Réinitialiser l'heure à minuit UTC
+      startDate.setUTCHours(0, 0, 0, 0);
       
       const durationDays = getDurationDays(values.duration);
       const endDate = new Date(startDate);
@@ -40,13 +41,22 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
 
       while (currentDate <= endDate) {
         if (values.weekdays.includes(currentDate.getDay())) {
-          // Créer une nouvelle date pour chaque occurrence et la définir à midi
-          const scheduleDate = new Date(currentDate);
-          scheduleDate.setUTCHours(12, 0, 0, 0);
+          // Créer une nouvelle date en UTC
+          const scheduleDate = new Date(Date.UTC(
+            currentDate.getUTCFullYear(),
+            currentDate.getUTCMonth(),
+            currentDate.getUTCDate(),
+            12, // Midi UTC
+            0,
+            0,
+            0
+          ));
           scheduleDates.push(scheduleDate);
         }
         currentDate.setDate(currentDate.getDate() + 1);
       }
+
+      console.log('Dates planifiées (UTC):', scheduleDates.map(d => d.toISOString()));
 
       const scheduledProjects = scheduleDates.map((date) => ({
         project_id: project.id,
