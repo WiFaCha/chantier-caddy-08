@@ -57,8 +57,8 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
           scheduleDates.push(new Date(currentTimestamp));
         }
         
-        // On ajoute exactement 24 heures en millisecondes
-        currentTimestamp += 24 * 60 * 60 * 1000;
+        // On ajoute 48 heures en millisecondes au lieu de 24
+        currentTimestamp += 48 * 60 * 60 * 1000;
       }
 
       console.log('Dates planifiées:', scheduleDates.map(d => ({
