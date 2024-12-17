@@ -22,17 +22,19 @@ const createDateRange = (startDate: Date, durationDays: number) => {
   // Conversion en temps local Paris
   const zonedDate = toZonedTime(startDate, TIMEZONE);
   
-  const startTimestamp = Date.UTC(
+  const startTimestamp = new Date(
     zonedDate.getFullYear(),
     zonedDate.getMonth(),
     zonedDate.getDate(),
     12, 0, 0, 0
-  );
+  ).getTime();
   
   const endTimestamp = startTimestamp + (durationDays * 24 * 60 * 60 * 1000);
   
   return { startTimestamp, endTimestamp };
 };
+
+import { addDays } from 'date-fns';
 
 const generateScheduleDates = (
   startTimestamp: number,
@@ -40,20 +42,17 @@ const generateScheduleDates = (
   selectedWeekdays: number[]
 ): Date[] => {
   const scheduleDates: Date[] = [];
-  let currentTimestamp = startTimestamp;
+  let currentDate = toZonedTime(new Date(startTimestamp), TIMEZONE);
 
-  while (currentTimestamp < endTimestamp) {
-    // Conversion de la date en fuseau horaire local
-    const currentDate = toZonedTime(new Date(currentTimestamp), TIMEZONE);
-    
-    // Vérification du jour de la semaine dans le fuseau horaire local
+  while (currentDate.getTime() < endTimestamp) {
     const localDay = currentDate.getDay();
-    
+
     if (selectedWeekdays.includes(localDay)) {
-      scheduleDates.push(new Date(currentTimestamp));
+      scheduleDates.push(new Date(currentDate));
     }
-    
-    currentTimestamp += 24 * 60 * 60 * 1000;
+
+    // Ajoute 1 jour correctement en tenant compte du fuseau horaire
+    currentDate = addDays(currentDate, 1);
   }
 
   return scheduleDates;
