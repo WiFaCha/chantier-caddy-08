@@ -3,6 +3,7 @@ import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RecurrenceFormValues, recurrenceFormSchema } from "./types";
+import { Switch } from "@/components/ui/switch";
 
 interface SimpleRecurrenceFormProps {
   onSubmit: (values: RecurrenceFormValues) => void;
@@ -14,18 +15,18 @@ export function SimpleRecurrenceForm({ onSubmit }: SimpleRecurrenceFormProps) {
     defaultValues: {
       weekdays: [],
       duration: "1week",
-      section: "morning", // Default to morning
+      section: "morning",
     },
   });
 
   const weekdays = [
+    { value: 0, label: "Dim" },
     { value: 1, label: "Lun" },
     { value: 2, label: "Mar" },
     { value: 3, label: "Mer" },
     { value: 4, label: "Jeu" },
     { value: 5, label: "Ven" },
     { value: 6, label: "Sam" },
-    { value: 0, label: "Dim" },
   ];
 
   const durations = [
@@ -75,6 +76,14 @@ export function SimpleRecurrenceForm({ onSubmit }: SimpleRecurrenceFormProps) {
               </Button>
             ))}
           </div>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium">Après-midi</span>
+          <Switch
+            checked={form.watch("section") === "afternoon"}
+            onCheckedChange={(checked) => form.setValue("section", checked ? "afternoon" : "morning")}
+          />
         </div>
 
         <Button type="submit" className="w-full">

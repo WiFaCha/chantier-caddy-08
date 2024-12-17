@@ -94,22 +94,31 @@ export function Stats() {
     );
   });
 
-  const morningProjects = todayProjects.filter(p => {
+  const sortProjects = (projects: ScheduledProject[]) => {
+    return [...projects].sort((a, b) => {
+      if (!a.time && !b.time) return 0;
+      if (!a.time) return 1;
+      if (!b.time) return -1;
+      return a.time.localeCompare(b.time);
+    });
+  };
+
+  const morningProjects = sortProjects(todayProjects.filter(p => {
     if (!p.section && !p.time) return true;
     if (p.section === 'morning') return true;
     if (p.section === 'afternoon') return false;
     if (!p.time) return true;
     const time = parseInt(p.time.split(':')[0]);
     return time < 12;
-  });
+  }));
 
-  const afternoonProjects = todayProjects.filter(p => {
+  const afternoonProjects = sortProjects(todayProjects.filter(p => {
     if (p.section === 'afternoon') return true;
     if (p.section === 'morning') return false;
     if (!p.time) return false;
     const time = parseInt(p.time.split(':')[0]);
     return time >= 12;
-  });
+  }));
 
   return (
     <Card>
