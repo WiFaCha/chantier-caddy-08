@@ -5,18 +5,9 @@ import { addProjectToCalendar, toggleProjectComplete, updateProjectSection, upda
 export function useProjectOperations(refetchScheduledProjects: () => Promise<any>) {
   const { toast } = useToast();
 
-  const handleAddProject = async (day: number, project: Project) => {
+  const handleAddProject = async (day: number, month: number, year: number, project: Project) => {
     try {
-      const currentDate = new Date();
-      const scheduleDate = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth(),
-        day,
-        12, // Set to noon to avoid timezone issues
-        0,
-        0,
-        0
-      );
+      const scheduleDate = new Date(year, month, day, 12, 0, 0, 0);
       
       await addProjectToCalendar(project, scheduleDate, project.time, project.section);
       await refetchScheduledProjects();

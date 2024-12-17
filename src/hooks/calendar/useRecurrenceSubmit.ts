@@ -28,7 +28,7 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
   const handleSubmit = async (values: RecurrenceFormValues) => {
     try {
       const startDate = new Date();
-      startDate.setHours(0, 0, 0, 0);
+      startDate.setHours(12, 0, 0, 0);
       
       const durationDays = getDurationDays(values.duration);
       const endDate = new Date(startDate);
@@ -40,7 +40,7 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
       while (currentDate <= endDate) {
         if (values.weekdays.includes(currentDate.getDay())) {
           const scheduleDate = new Date(currentDate);
-          scheduleDate.setHours(0, 0, 0, 0);
+          scheduleDate.setHours(12, 0, 0, 0);
           scheduleDates.push(scheduleDate);
         }
         currentDate.setDate(currentDate.getDate() + 1);

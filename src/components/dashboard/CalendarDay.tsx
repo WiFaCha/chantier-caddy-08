@@ -9,7 +9,7 @@ interface CalendarDayProps {
   year: number;
   projects: ScheduledProject[];
   catalogProjects: Project[];
-  onAddProject: (day: number, project: Project) => void;
+  onAddProject: (day: number, month: number, year: number, project: Project) => void;
   onDeleteProject: (scheduleId: string) => void;
   onToggleComplete: (scheduleId: string) => void;
   onTimeChange: (scheduleId: string, time: string) => void;
@@ -63,7 +63,7 @@ export function CalendarDay({
       section: period,
       time: undefined      
     };
-    onAddProject(day, projectWithTime);
+    onAddProject(day, month, year, projectWithTime);
   };
 
   return (
