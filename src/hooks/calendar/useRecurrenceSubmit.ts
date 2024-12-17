@@ -38,7 +38,10 @@ export function useRecurrenceSubmit(project: Project, onSuccess?: () => void) {
 
       while (currentDate <= endDate) {
         if (values.weekdays.includes(currentDate.getDay())) {
-          scheduleDates.push(new Date(currentDate));
+          const scheduleDate = new Date(currentDate);
+          // Ajuster la date pour tenir compte du fuseau horaire
+          scheduleDate.setUTCHours(12, 0, 0, 0);
+          scheduleDates.push(scheduleDate);
         }
         currentDate.setDate(currentDate.getDate() + 1);
       }
