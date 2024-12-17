@@ -6,7 +6,7 @@ interface CalendarGridProps {
   days: (Date | null)[];
   projects: Project[];
   scheduledProjects: ScheduledProject[];
-  onAddProject: (day: number, project: Project) => void;
+  onAddProject: (day: number, month: number, year: number, project: Project) => void;
   onDeleteProject: (scheduleId: string) => void;
   onToggleComplete: (scheduleId: string) => void;
   onTimeChange: (scheduleId: string, time: string) => void;
