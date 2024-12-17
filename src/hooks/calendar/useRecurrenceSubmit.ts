@@ -3,8 +3,10 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Project } from "@/types/calendar";
 import { RecurrenceFormValues } from "@/components/projects/recurrence/types";
+import { toZonedTime, formatInTimeZone } from 'date-fns-tz';
 
 const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000000";
+const TIMEZONE = 'Europe/Paris';
 
 const getDurationDays = (duration: "1week" | "2weeks" | "1month" | "3months"): number => {
   const durationMap = {
@@ -17,10 +19,13 @@ const getDurationDays = (duration: "1week" | "2weeks" | "1month" | "3months"): n
 };
 
 const createDateRange = (startDate: Date, durationDays: number) => {
+  // Conversion en temps local Paris
+  const zonedDate = toZonedTime(startDate, TIMEZONE);
+  
   const startTimestamp = Date.UTC(
-    startDate.getUTCFullYear(),
-    startDate.getUTCMonth(),
-    startDate.getUTCDate(),
+    zonedDate.getFullYear(),
+    zonedDate.getMonth(),
+    zonedDate.getDate(),
     12, 0, 0, 0
   );
   
@@ -38,9 +43,13 @@ const generateScheduleDates = (
   let currentTimestamp = startTimestamp;
 
   while (currentTimestamp < endTimestamp) {
-    const currentDate = new Date(currentTimestamp);
+    // Conversion de la date en fuseau horaire local
+    const currentDate = toZonedTime(new Date(currentTimestamp), TIMEZONE);
     
-    if (selectedWeekdays.includes(currentDate.getUTCDay())) {
+    // Vérification du jour de la semaine dans le fuseau horaire local
+    const localDay = currentDate.getDay();
+    
+    if (selectedWeekdays.includes(localDay)) {
       scheduleDates.push(new Date(currentTimestamp));
     }
     
@@ -57,7 +66,7 @@ const createScheduledProjects = (
 ) => {
   return scheduleDates.map((date) => ({
     project_id: projectId,
-    schedule_date: date.toISOString(),
+    schedule_date: formatInTimeZone(date, TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"),
     section,
     user_id: DEFAULT_USER_ID,
     completed: false
@@ -80,6 +89,11 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
         values.weekdays
       );
 
+      console.log('Dates planifiées:', scheduleDates.map(d => ({
+        local: formatInTimeZone(d, TIMEZONE, 'yyyy-MM-dd HH:mm:ss zzz'),
+        day: formatInTimeZone(d, TIMEZONE, 'EEEE'),
+      })));
+
       const scheduledProjects = createScheduledProjects(
         scheduleDates,
         project.id,
@@ -95,7 +109,7 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
       queryClient.invalidateQueries({ queryKey: ['scheduledProjects'] });
       toast({
         title: "Succès",
-        description: `Le chantier a été planifié sur ${scheduleDates.length} jours`,
+        description: "Les tâches ont été planifiées avec succès",
       });
       onSuccess();
     } catch (error: any) {
