@@ -27,6 +27,7 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
 
   const handleSubmit = async (values: RecurrenceFormValues) => {
     try {
+      // Créer la date de début à midi pour éviter les problèmes de timezone
       const startDate = new Date();
       startDate.setHours(12, 0, 0, 0);
       
@@ -39,8 +40,9 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
 
       while (currentDate <= endDate) {
         if (values.weekdays.includes(currentDate.getDay())) {
+          // Créer une nouvelle date pour chaque occurrence et la définir à midi
           const scheduleDate = new Date(currentDate);
-          scheduleDate.setHours(12, 0, 0, 0);
+          scheduleDate.setUTCHours(12, 0, 0, 0);
           scheduleDates.push(scheduleDate);
         }
         currentDate.setDate(currentDate.getDate() + 1);
