@@ -27,36 +27,47 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
 
   const handleSubmit = async (values: RecurrenceFormValues) => {
     try {
-      // Créer la date de début en UTC
-      const startDate = new Date();
-      // Réinitialiser l'heure à minuit UTC
-      startDate.setUTCHours(0, 0, 0, 0);
-      
+      // On commence par obtenir la date actuelle à minuit UTC
+      const now = new Date();
+      const startDate = new Date(Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate()
+      ));
+
       const durationDays = getDurationDays(values.duration);
       const endDate = new Date(startDate);
-      endDate.setDate(startDate.getDate() + durationDays);
+      endDate.setUTCDate(startDate.getUTCDate() + durationDays);
 
       const scheduleDates: Date[] = [];
       const currentDate = new Date(startDate);
 
-      while (currentDate <= endDate) {
-        if (values.weekdays.includes(currentDate.getDay())) {
-          // Créer une nouvelle date en UTC
+      // Debug
+      console.log('Date de début:', startDate.toISOString());
+      console.log('Date de fin:', endDate.toISOString());
+
+      while (currentDate < endDate) {
+        // On vérifie si le jour de la semaine est inclus dans les jours sélectionnés
+        if (values.weekdays.includes(currentDate.getUTCDay())) {
+          // On crée une nouvelle date pour éviter les références
           const scheduleDate = new Date(Date.UTC(
             currentDate.getUTCFullYear(),
             currentDate.getUTCMonth(),
             currentDate.getUTCDate(),
-            12, // Midi UTC
-            0,
-            0,
-            0
+            12 // Midi UTC pour éviter les problèmes de changement de jour
           ));
           scheduleDates.push(scheduleDate);
         }
-        currentDate.setDate(currentDate.getDate() + 1);
+        // On avance d'un jour en UTC
+        currentDate.setUTCDate(currentDate.getUTCDate() + 1);
       }
 
-      console.log('Dates planifiées (UTC):', scheduleDates.map(d => d.toISOString()));
+      // Debug
+      console.log('Dates planifiées:', scheduleDates.map(d => ({
+        iso: d.toISOString(),
+        utcDay: d.getUTCDay(),
+        localDay: d.getDay()
+      })));
 
       const scheduledProjects = scheduleDates.map((date) => ({
         project_id: project.id,
