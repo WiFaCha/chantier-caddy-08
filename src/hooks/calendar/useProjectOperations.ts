@@ -7,11 +7,11 @@ export function useProjectOperations(refetchScheduledProjects: () => Promise<any
 
   const handleAddProject = async (day: number, project: Project) => {
     try {
-      const scheduleDate = new Date(Date.UTC(
-        new Date().getFullYear(),
-        new Date().getMonth(),
-        day
-      ));
+      const scheduleDate = new Date();
+      scheduleDate.setFullYear(scheduleDate.getFullYear());
+      scheduleDate.setMonth(scheduleDate.getMonth());
+      scheduleDate.setDate(day);
+      scheduleDate.setHours(0, 0, 0, 0);
       
       await addProjectToCalendar(project, scheduleDate, project.time, project.section);
       await refetchScheduledProjects();

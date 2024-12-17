@@ -1,12 +1,12 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Project } from "@/types/calendar";
 import { RecurrenceFormValues } from "@/components/projects/recurrence/types";
-import { useToast } from "@/components/ui/use-toast";
 
 const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000000";
 
-export function useRecurrenceSubmit(project: Project, onSuccess?: () => void) {
+export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -30,8 +30,9 @@ export function useRecurrenceSubmit(project: Project, onSuccess?: () => void) {
       const startDate = new Date();
       startDate.setHours(0, 0, 0, 0);
       
+      const durationDays = getDurationDays(values.duration);
       const endDate = new Date(startDate);
-      endDate.setDate(startDate.getDate() + getDurationDays(values.duration));
+      endDate.setDate(startDate.getDate() + durationDays);
 
       const scheduleDates: Date[] = [];
       const currentDate = new Date(startDate);
@@ -39,8 +40,7 @@ export function useRecurrenceSubmit(project: Project, onSuccess?: () => void) {
       while (currentDate <= endDate) {
         if (values.weekdays.includes(currentDate.getDay())) {
           const scheduleDate = new Date(currentDate);
-          // Ajuster la date pour tenir compte du fuseau horaire
-          scheduleDate.setUTCHours(12, 0, 0, 0);
+          scheduleDate.setHours(0, 0, 0, 0);
           scheduleDates.push(scheduleDate);
         }
         currentDate.setDate(currentDate.getDate() + 1);
@@ -65,10 +65,7 @@ export function useRecurrenceSubmit(project: Project, onSuccess?: () => void) {
         title: "Succès",
         description: `Le chantier a été planifié sur ${scheduleDates.length} jours`,
       });
-      
-      if (onSuccess) {
-        onSuccess();
-      }
+      onSuccess();
     } catch (error: any) {
       toast({
         title: "Erreur",
