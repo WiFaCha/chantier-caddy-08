@@ -179,7 +179,7 @@ export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                   <div className="space-y-0.5">
-                    <FormLabel>Chantier à faire une fois par mois</FormLabel>
+                    <FormLabel>Chantier à faire au moins une fois par mois</FormLabel>
                   </div>
                   <FormControl>
                     <Switch
