@@ -49,51 +49,36 @@ const generateScheduleDates = (
   endTimestamp: number,
   selectedWeekdays: number[]
 ): Date[] => {
-  debugLog('Génération des dates de planification', {
-    startTimestamp,
-    endTimestamp,
-    selectedWeekdays
-  });
-
   const scheduleDates: Date[] = [];
   const startDate = new Date(startTimestamp);
   const endDate = new Date(endTimestamp);
 
-  debugLog('Plage de dates', {
-    startDate: startDate.toISOString(),
-    endDate: endDate.toISOString()
-  });
-
-  let currentDate = startDate;
+  let currentDate = new Date(startDate);
+  
   while (currentDate <= endDate) {
-    const zonedCurrentDate = toZonedTime(currentDate, TIMEZONE);
-    const localDay = zonedCurrentDate.getDay();
-
-    debugLog('Analyse de la date', {
-      currentDate: currentDate.toISOString(),
-      zonedDate: zonedCurrentDate.toISOString(),
-      localDay,
-      isSelectedDay: selectedWeekdays.includes(localDay)
-    });
+    // Utiliser getUTC methods pour éviter les problèmes de décalage
+    const localDay = currentDate.getDay();
 
     if (selectedWeekdays.includes(localDay)) {
+      // Créer une nouvelle date à midi pour éviter les problèmes de fuseau horaire
       const scheduledDate = new Date(
-        zonedCurrentDate.getFullYear(), 
-        zonedCurrentDate.getMonth(), 
-        zonedCurrentDate.getDate(), 
+        currentDate.getFullYear(), 
+        currentDate.getMonth(), 
+        currentDate.getDate(), 
         12, 0, 0
       );
       
       scheduleDates.push(scheduledDate);
     }
 
-    currentDate = addDays(currentDate, 1);
+    // Ajouter exactement 24 heures
+    currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
   }
 
-  debugLog('Dates planifiées', scheduleDates.map(d => ({
-    local: formatInTimeZone(d, TIMEZONE, 'yyyy-MM-dd HH:mm:ss zzz'),
-    day: formatInTimeZone(d, TIMEZONE, 'EEEE'),
-    timestamp: d.getTime()
+  console.log('Dates générées:', scheduleDates.map(d => ({
+    date: d.toISOString(),
+    jour: d.toLocaleDateString('fr-FR', { weekday: 'long' }),
+    jour_numero: d.getDay()
   })));
 
   return scheduleDates;
