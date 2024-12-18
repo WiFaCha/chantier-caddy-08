@@ -3,7 +3,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Project } from "@/types/calendar";
 import { RecurrenceFormValues } from "@/components/projects/recurrence/types";
-import { toZonedTime, formatInTimeZone } from 'date-fns-tz';
+import { toZonedTime, formatInTimeZone, addDays } from 'date-fns-tz';
 
 const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000000";
 const TIMEZONE = 'Europe/Paris';
@@ -40,30 +40,36 @@ const generateScheduleDates = (
   selectedWeekdays: number[]
 ): Date[] => {
   const scheduleDates: Date[] = [];
-  let currentTimestamp = startTimestamp;
+  const startDate = new Date(startTimestamp);
+  const endDate = new Date(endTimestamp);
 
-  while (currentTimestamp < endTimestamp) {
-    const currentDate = toZonedTime(new Date(currentTimestamp), TIMEZONE);
-    const localDay = currentDate.getDay();
+  let currentDate = startDate;
+  while (currentDate <= endDate) {
+    // Convertir la date courante dans le fuseau horaire de Paris
+    const zonedCurrentDate = toZonedTime(currentDate, TIMEZONE);
+    const localDay = zonedCurrentDate.getDay();
 
+    // Vérifier si le jour est sélectionné
     if (selectedWeekdays.includes(localDay)) {
       // Créer une date à midi pour éviter les problèmes de décalage
       const scheduledDate = new Date(
-        currentDate.getFullYear(), 
-        currentDate.getMonth(), 
-        currentDate.getDate(), 
+        zonedCurrentDate.getFullYear(), 
+        zonedCurrentDate.getMonth(), 
+        zonedCurrentDate.getDate(), 
         12, 0, 0
       );
+      
       scheduleDates.push(scheduledDate);
     }
 
-    // Ajouter un jour
-    currentTimestamp += 24 * 60 * 60 * 1000;
+    // Ajouter un jour - utiliser addDays pour gérer correctement les changements de mois
+    currentDate = addDays(currentDate, 1);
   }
 
   console.log('Dates planifiées:', scheduleDates.map(d => ({
     local: formatInTimeZone(d, TIMEZONE, 'yyyy-MM-dd HH:mm:ss zzz'),
     day: formatInTimeZone(d, TIMEZONE, 'EEEE'),
+    timestamp: d.getTime()
   })));
 
   return scheduleDates;
