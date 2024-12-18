@@ -4,7 +4,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -18,7 +17,6 @@ const formSchema = z.object({
   color: z.enum(["violet", "blue", "green", "red"]),
   type: z.enum(["Mensuel", "Ponctuel"]),
   window_cleaning: z.array(z.string()).default([]),
-  monthly_frequency: z.enum(["0x", "1x", "2x"]).optional().default("0x")
 });
 
 type ProjectFormValues = z.infer<typeof formSchema>;
@@ -47,7 +45,6 @@ export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }
       color: project?.color || "violet",
       type: project?.type || "Mensuel",
       window_cleaning: project?.window_cleaning || [],
-      monthly_frequency: project?.monthly_frequency || "0x"
     },
   });
 
@@ -170,27 +167,6 @@ export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }
                       </ToggleGroupItem>
                     ))}
                   </ToggleGroup>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="monthly_frequency"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Fréquence mensuelle</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionnez une fréquence" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="0x">Jamais</SelectItem>
-                      <SelectItem value="1x">Une fois par mois</SelectItem>
-                      <SelectItem value="2x">Deux fois par mois</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </FormItem>
               )}
             />
