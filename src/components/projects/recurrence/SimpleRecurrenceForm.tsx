@@ -19,15 +19,15 @@ export function SimpleRecurrenceForm({ onSubmit }: SimpleRecurrenceFormProps) {
     },
   });
 
-  const weekdays = [
-    { value: 2, label: "Lun" },
-    { value: 3, label: "Mar" },
-    { value: 4, label: "Mer" },
-    { value: 5, label: "Jeu" },
-    { value: 6, label: "Ven" },
-    { value: 0, label: "Sam" },
-    { value: 1, label: "Dim" },
-  ];
+const weekdays = [
+  { value: 1, label: "Lun" },  // Lundi
+  { value: 2, label: "Mar" },  // Mardi
+  { value: 3, label: "Mer" },  // Mercredi
+  { value: 4, label: "Jeu" },  // Jeudi
+  { value: 5, label: "Ven" },  // Vendredi
+  { value: 6, label: "Sam" },  // Samedi
+  { value: 0, label: "Dim" },  // Dimanche
+];
 
   const durations = [
     { value: "1week" as const, label: "1 semaine" },
