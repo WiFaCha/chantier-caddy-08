@@ -20,13 +20,13 @@ export function SimpleRecurrenceForm({ onSubmit }: SimpleRecurrenceFormProps) {
   });
 
   const weekdays = [
-    { value: 0, label: "Dim" },
-    { value: 1, label: "Lun" },
-    { value: 2, label: "Mar" },
-    { value: 3, label: "Mer" },
-    { value: 4, label: "Jeu" },
-    { value: 5, label: "Ven" },
-    { value: 6, label: "Sam" },
+    { value: 0, label: "Sam" },
+    { value: 1, label: "Dim" },
+    { value: 2, label: "Lun" },
+    { value: 3, label: "Mar" },
+    { value: 4, label: "Mer" },
+    { value: 5, label: "Jeu" },
+    { value: 6, label: "Ven" },
   ];
 
   const durations = [
