@@ -20,9 +20,13 @@ const getDurationDays = (
   return durationMap[duration] || 7;
 };
 
+import { toZonedTime, zonedTimeToUtc } from 'date-fns-tz';
+
 const createDateRange = (startDate: Date, durationDays: number) => {
-  // Convertir la date de début à "midi" dans le fuseau horaire Europe/Paris
-  const startOfDayInParis = utcToZonedTime(startDate, TIMEZONE);
+  // Assurez-vous que startDate est interprété dans le fuseau horaire local
+  const startOfDayInParis = toZonedTime(startDate, TIMEZONE);
+
+  // Force l'heure de début à 12:00 dans le fuseau horaire local
   const startDateAtNoon = new Date(
     startOfDayInParis.getFullYear(),
     startOfDayInParis.getMonth(),
@@ -30,14 +34,16 @@ const createDateRange = (startDate: Date, durationDays: number) => {
     12, 0, 0, 0
   );
 
+  // Convertit la date locale en UTC pour éviter les décalages
   const startTimestamp = zonedTimeToUtc(startDateAtNoon, TIMEZONE).getTime();
-  const endTimestamp = startTimestamp + durationDays * 24 * 60 * 60 * 1000;
 
-  console.log("Start date (local):", startDateAtNoon);
-  console.log("Start timestamp (UTC):", startTimestamp);
+  const endTimestamp = startTimestamp + durationDays * 24 * 60 * 60 * 1000;
 
   return { startTimestamp, endTimestamp };
 };
+
+import { addDays } from 'date-fns';
+import { utcToZonedTime } from 'date-fns-tz';
 
 const generateScheduleDates = (
   startTimestamp: number,
@@ -48,41 +54,22 @@ const generateScheduleDates = (
   let currentTimestamp = startTimestamp;
 
   while (currentTimestamp < endTimestamp) {
-    // Convertir le timestamp en date locale
+    // Convertit le timestamp en date locale (Europe/Paris)
     const currentDate = utcToZonedTime(new Date(currentTimestamp), TIMEZONE);
 
-    // Récupérer le jour local
-    const localDay = currentDate.getDay();
+    const localDay = currentDate.getDay(); // Jour local
 
-    // Vérifier si le jour local est dans les jours sélectionnés
     if (selectedWeekdays.includes(localDay)) {
-      // Forcer la date à "midi" local pour éviter tout décalage
-      const scheduledDate = zonedTimeToUtc(
-        new Date(
-          currentDate.getFullYear(),
-          currentDate.getMonth(),
-          currentDate.getDate(),
-          12, 0, 0, 0
-        ),
-        TIMEZONE
-      );
-      scheduleDates.push(scheduledDate);
+      scheduleDates.push(new Date(currentTimestamp)); // Ajout de la date exacte
     }
 
-    // Passer au jour suivant (ajouter 1 jour en millisecondes)
+    // Ajoute 1 jour en UTC
     currentTimestamp += 24 * 60 * 60 * 1000;
   }
 
-  console.log(
-    "Planned dates:",
-    scheduleDates.map((d) => ({
-      local: formatInTimeZone(d, TIMEZONE, "yyyy-MM-dd HH:mm:ss zzz"),
-      day: formatInTimeZone(d, TIMEZONE, "EEEE"),
-    }))
-  );
-
   return scheduleDates;
 };
+
 
 const createScheduledProjects = (
   scheduleDates: Date[],
