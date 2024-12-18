@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
 import { CheckIcon, XIcon } from 'lucide-react';
-import { useProjects } from '@/hooks/useProjects'; // Assuming you have a hook to fetch projects
-import { useCalendar } from '@/hooks/useCalendar'; // Assuming you have a hook to manage calendar events
+import { useProjects } from '@/hooks/useProjects'; 
+import { useCalendar } from '@/hooks/useCalendar'; 
 
 export function MonthlyChantiersDashboard() {
-  const { projects } = useProjects();
-  const { events } = useCalendar();
+  const { projects, loading: projectsLoading } = useProjects();
+  const { events, loading: eventsLoading } = useCalendar();
 
   const monthlyChantiers = useMemo(() => {
     return projects.filter(project => 
@@ -26,6 +26,19 @@ export function MonthlyChantiersDashboard() {
     const requiredFrequency = project.monthly_frequency === '1x' ? 1 : 2;
     return projectEvents.length === requiredFrequency;
   };
+
+  if (projectsLoading || eventsLoading) {
+    return (
+      <div className="bg-white shadow-md rounded-lg p-4 mt-4">
+        <h2 className="text-xl font-semibold mb-4">Chantiers Mensuels</h2>
+        <p>Chargement...</p>
+      </div>
+    );
+  }
+
+  if (monthlyChantiers.length === 0) {
+    return null; 
+  }
 
   return (
     <div className="bg-white shadow-md rounded-lg p-4 mt-4">
