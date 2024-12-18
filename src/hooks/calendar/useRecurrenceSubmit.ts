@@ -1,89 +1,159 @@
-import * as z from "zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Project } from "@/types/calendar";
-import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Switch } from "@/components/ui/switch";
-import { formatInTimeZone } from 'date-fns-tz';
-import { format, parseISO } from 'date-fns';
+import { RecurrenceFormValues } from "@/components/projects/recurrence/types";
+import { toZonedTime, formatInTimeZone, addDays } from 'date-fns-tz';
 
-// Types
-export const recurrenceFormSchema = z.object({
-  weekdays: z.number().array().min(1, "Sélectionnez au moins un jour"),
-  duration: z.enum(["1week", "2weeks", "1month", "3months"]),
-  section: z.enum(["morning", "afternoon"])
-});
-
-export type RecurrenceFormValues = z.infer<typeof recurrenceFormSchema>;
-
-// Constantes
 const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000000";
 const TIMEZONE = 'Europe/Paris';
 
-// Fonction de débogage avancé
-const advancedDebugLog = (message: string, data?: any) => {
-  const timestamp = new Date().toISOString();
-  console.group(`🔍 DEBUG [${timestamp}] ${message}`);
-  
-  if (data) {
-    Object.entries(data).forEach(([key, value]) => {
-      console.log(`${key}:`, 
-        value instanceof Date ? value.toISOString() : 
-        typeof value === 'object' ? JSON.stringify(value) : 
-        value
-      );
-    });
+// Activer le mode de débogage global
+(window as any).DEBUG_RECURRENCE = true;
+
+const debugLog = (...args: any[]) => {
+  if ((window as any).DEBUG_RECURRENCE) {
+    console.log('[RECURRENCE DEBUG]', ...args);
   }
+};
+
+const getDurationDays = (duration: "1week" | "2weeks" | "1month" | "3months"): number => {
+  const durationMap = {
+    "1week": 7,
+    "2weeks": 14,
+    "1month": 30,
+    "3months": 90
+  };
+  return durationMap[duration] || 7;
+};
+
+const createDateRange = (startDate: Date, durationDays: number) => {
+  // Créer une date à midi pour éviter les problèmes de décalage
+  const startDateAtNoon = new Date(
+    startDate.getFullYear(),
+    startDate.getMonth(),
+    startDate.getDate(),
+    12, 0, 0, 0
+  );
+
+  const startTimestamp = startDateAtNoon.getTime();
+  const endTimestamp = startTimestamp + (durationDays * 24 * 60 * 60 * 1000);
   
-  console.groupEnd();
+  return { startTimestamp, endTimestamp };
 };
 
 const generateScheduleDates = (
-  startDate: Date,
-  endDate: Date,
+  startTimestamp: number,
+  endTimestamp: number,
   selectedWeekdays: number[]
 ): Date[] => {
   const scheduleDates: Date[] = [];
+  const startDate = new Date(startTimestamp);
+  const endDate = new Date(endTimestamp);
+
+  console.group('🔍 Génération des dates');
+  console.log('Paramètres initiaux:', {
+    startDate: startDate.toISOString(),
+    endDate: endDate.toISOString(),
+    selectedWeekdays
+  });
+
   let currentDate = new Date(startDate);
-
-  console.log('🔍 DEBUG - Paramètres initiaux');
-  console.log('Date de début:', startDate.toISOString());
-  console.log('Date de fin:', endDate.toISOString());
-  console.log('Jours sélectionnés:', selectedWeekdays);
-  console.log('Jour de la date de début:', startDate.getDay());
-
+  
   while (currentDate <= endDate) {
     const currentDay = currentDate.getDay();
 
-    console.log('Date courante:', currentDate.toISOString());
-    console.log('Jour courant:', currentDay);
-    console.log('Est-ce un jour sélectionné ?', selectedWeekdays.includes(currentDay));
-
+    // Vérifier si le jour actuel est dans les jours sélectionnés
     if (selectedWeekdays.includes(currentDay)) {
-      const scheduledDate = new Date(
+      // Créer une nouvelle date à midi, en forçant le jour correct
+      const scheduledDate = new Date(Date.UTC(
         currentDate.getFullYear(), 
         currentDate.getMonth(), 
         currentDate.getDate(), 
         12, 0, 0
-      );
+      ));
 
-      console.log('Date programmée ajoutée:', scheduledDate.toISOString());
+      console.log('Date générée:', {
+        originalDate: currentDate.toISOString(),
+        scheduledDate: scheduledDate.toISOString(),
+        currentDay,
+        isSelectedDay: selectedWeekdays.includes(currentDay)
+      });
+
       scheduleDates.push(scheduledDate);
     }
 
-    currentDate.setDate(currentDate.getDate() + 1);
+    // Ajouter un jour
+    currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
   }
 
-  console.log('🔍 Dates finales générées:');
-  scheduleDates.forEach(date => {
-    console.log(date.toISOString(), 'Jour:', date.getDay());
-  });
+  console.log('Dates finales:', scheduleDates.map(d => ({
+    date: d.toISOString(),
+    localDate: d.toLocaleDateString('fr-FR', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    }),
+    day: d.getDay()
+  })));
+  console.groupEnd();
 
   return scheduleDates;
+};
+
+const createScheduledProjects = (
+  scheduleDates: Date[],
+  projectId: string,
+  section: 'morning' | 'afternoon'
+) => {
+  // Forcer le bon jour pour chaque date
+  const correctedDates = scheduleDates.map(originalDate => {
+    // Créer une nouvelle date à midi en forçant le jour correct
+    const correctedDate = new Date(
+      originalDate.getFullYear(), 
+      originalDate.getMonth(), 
+      originalDate.getDate(), 
+      12, 0, 0
+    );
+
+    console.log('Correction de date', {
+      originalDate: originalDate.toISOString(),
+      originalDay: originalDate.getDay(),
+      correctedDate: correctedDate.toISOString(),
+      correctedDay: correctedDate.getDay()
+    });
+
+    return correctedDate;
+  });
+
+  debugLog('Création des projets planifiés', {
+    nombreDeDates: correctedDates.length,
+    section,
+    projectId
+  });
+
+  const scheduledProjects = correctedDates.map((date) => {
+    const scheduledProject = {
+      project_id: projectId,
+      schedule_date: formatInTimeZone(date, TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"),
+      section,
+      user_id: DEFAULT_USER_ID,
+      completed: false
+    };
+
+    debugLog('Projet planifié', {
+      date: scheduledProject.schedule_date,
+      jour: formatInTimeZone(date, TIMEZONE, 'EEEE'),
+      timestamp: date.getTime()
+    });
+
+    return scheduledProject;
+  });
+
+  debugLog('Projets planifiés finaux', scheduledProjects);
+
+  return scheduledProjects;
 };
 
 export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
@@ -92,55 +162,45 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
 
   const handleSubmit = async (values: RecurrenceFormValues) => {
     try {
-      // Date de début à midi
       const now = new Date();
-      now.setHours(12, 0, 0, 0);
-
-      // Calculer la durée
-      const durationMap = {
-        "1week": 7,
-        "2weeks": 14,
-        "1month": 30,
-        "3months": 90
-      };
-      const durationDays = durationMap[values.duration];
-
-      // Date de fin
-      const endDate = new Date(now);
-      endDate.setDate(now.getDate() + durationDays);
-      endDate.setHours(23, 59, 59, 999);
-
-      // Log diagnostique
-      advancedDebugLog('Paramètres de récurrence', {
+      const durationDays = getDurationDays(values.duration);
+      const { startTimestamp, endTimestamp } = createDateRange(now, durationDays);
+      
+      console.group('🔍 DIAGNOSTIC RÉCURRENCE COMPLET');
+      console.log('Paramètres initiaux', {
         dateActuelle: now.toISOString(),
-        dateEnd: endDate.toISOString(),
         jourActuel: now.getDay(),
-        joursSelectionnes: values.weekdays,
-        duree: values.duration
+        duree: values.duration,
+        joursSélectionnés: values.weekdays,
+        plageDebut: new Date(startTimestamp).toISOString(),
+        plageEnd: new Date(endTimestamp).toISOString()
       });
 
       const scheduleDates = generateScheduleDates(
-        now, 
-        endDate, 
+        startTimestamp,
+        endTimestamp,
         values.weekdays
       );
 
-      const scheduledProjects = scheduleDates.map((date) => ({
-        project_id: project.id,
-        schedule_date: formatInTimeZone(date, TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"),
-        section: values.section,
-        user_id: DEFAULT_USER_ID,
-        completed: false
-      }));
+      console.log('Dates générées DÉTAIL', scheduleDates.map(d => ({
+        dateISO: d.toISOString(),
+        dateLocale: d.toLocaleDateString('fr-FR', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        }),
+        jour: d.getDay(),
+        heureUTC: d.getUTCHours(),
+        heureLocale: d.getHours()
+      })));
+      console.groupEnd();
 
-      // Log final
-      advancedDebugLog('Projets à planifier', {
-        nombreProjets: scheduledProjects.length,
-        projets: scheduledProjects.map(p => ({
-          date: p.schedule_date,
-          jour: format(parseISO(p.schedule_date), 'EEEE', { locale: require('date-fns/locale/fr') })
-        }))
-      });
+      const scheduledProjects = createScheduledProjects(
+        scheduleDates,
+        project.id,
+        values.section
+      );
 
       const { error } = await supabase
         .from('scheduled_projects')
@@ -164,21 +224,4 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
   };
 
   return handleSubmit;
-}
-
-// Le reste du code du composant SimpleRecurrenceForm reste identique
-export function SimpleRecurrenceForm({ onSubmit }: { onSubmit: (values: RecurrenceFormValues) => void }) {
-  const form = useForm<RecurrenceFormValues>({
-    resolver: zodResolver(recurrenceFormSchema),
-    defaultValues: {
-      weekdays: [],
-      duration: "1week",
-      section: "morning",
-    },
-  });
-
-  // Code du formulaire identique à la version précédente...
-  // (Je ne le répète pas pour ne pas surcharger)
-
-  return (/* formulaire */);
 }
