@@ -28,7 +28,7 @@ const createDateRange = (startDate: Date, durationDays: number) => {
   );
 
   const startTimestamp = startDateAtNoon.getTime();
-  const endTimestamp = startTimestamp + durationDays * 24 * 60 * 60 * 1000;
+  const endTimestamp = startTimestamp + durationDays * 2 * 24 * 60 * 60 * 1000;
 
   return { startTimestamp, endTimestamp };
 };
