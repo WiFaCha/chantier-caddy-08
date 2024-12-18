@@ -19,8 +19,9 @@ const getDurationDays = (duration: "1week" | "2weeks" | "1month" | "3months"): n
 };
 
 const createDateRange = (startDate: Date, durationDays: number) => {
+  // Convertir la date de début à midi dans le fuseau horaire de Paris
   const startOfDayInParis = toZonedTime(startDate, TIMEZONE);
-
+  
   const startDateAtNoon = new Date(
     startOfDayInParis.getFullYear(),
     startOfDayInParis.getMonth(),
@@ -29,8 +30,8 @@ const createDateRange = (startDate: Date, durationDays: number) => {
   );
 
   const startTimestamp = startDateAtNoon.getTime();
-  const endTimestamp = startTimestamp + durationDays * 24 * 60 * 60 * 1000;
-
+  const endTimestamp = startTimestamp + (durationDays * 24 * 60 * 60 * 1000);
+  
   return { startTimestamp, endTimestamp };
 };
 
