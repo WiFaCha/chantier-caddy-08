@@ -1,64 +1,50 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-
-export interface CalendarEvent {
-  id: string;
-  projectId: string;
-  date: string;
-  // Add other event fields as needed
-}
+import { useCalendarState } from "./calendar/useCalendarState";
+import { useProjectsQuery } from "./calendar/useProjectsQuery";
+import { useScheduledProjectsQuery } from "./calendar/useScheduledProjectsQuery";
+import { useProjectOperations } from "./calendar/useProjectOperations";
+import { deleteScheduledProject } from "@/utils/calendarOperations";
+import { useToast } from "@/components/ui/use-toast";
 
 export function useCalendar() {
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+  const { currentDate, setCurrentDate, viewMode, setViewMode } = useCalendarState();
+  const { data: projects = [] } = useProjectsQuery();
+  const { scheduledProjects = [], refetchScheduledProjects } = useScheduledProjectsQuery();
+  const { 
+    handleAddProject,
+    handleToggleComplete,
+    handleTimeChange,
+    handleSectionChange
+  } = useProjectOperations(refetchScheduledProjects);
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('events')
-          .select('*');
+  const handleDeleteProject = async (scheduleId: string) => {
+    try {
+      await deleteScheduledProject(scheduleId);
+      await refetchScheduledProjects();
+      toast({
+        title: "Succès",
+        description: "Le projet a été supprimé avec succès",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
 
-        if (error) {
-          throw error;
-        }
-
-        setEvents(data || []);
-        setLoading(false);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
-        setLoading(false);
-      }
-    };
-
-    fetchEvents();
-
-    // Optional: Set up real-time subscription
-    const subscription = supabase
-      .channel('events')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, (payload) => {
-        switch (payload.eventType) {
-          case 'INSERT':
-            setEvents(prev => [...prev, payload.new as CalendarEvent]);
-            break;
-          case 'UPDATE':
-            setEvents(prev => prev.map(event => 
-              event.id === payload.new.id ? payload.new as CalendarEvent : event
-            ));
-            break;
-          case 'DELETE':
-            setEvents(prev => prev.filter(event => event.id !== payload.old.id));
-            break;
-        }
-      })
-      .subscribe();
-
-    // Cleanup subscription
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  return { events, loading, error };
+  return {
+    currentDate,
+    setCurrentDate,
+    viewMode,
+    setViewMode,
+    projects,
+    scheduledProjects,
+    handleAddProject,
+    handleDeleteProject,
+    handleToggleComplete,
+    handleTimeChange,
+    handleSectionChange
+  };
 }
