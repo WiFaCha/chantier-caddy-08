@@ -8,6 +8,15 @@ import { toZonedTime, formatInTimeZone, addDays } from 'date-fns-tz';
 const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000000";
 const TIMEZONE = 'Europe/Paris';
 
+// Activer le mode de débogage global
+(window as any).DEBUG_RECURRENCE = true;
+
+const debugLog = (...args: any[]) => {
+  if ((window as any).DEBUG_RECURRENCE) {
+    console.log('[RECURRENCE DEBUG]', ...args);
+  }
+};
+
 const getDurationDays = (duration: "1week" | "2weeks" | "1month" | "3months"): number => {
   const durationMap = {
     "1week": 7,
@@ -40,19 +49,34 @@ const generateScheduleDates = (
   endTimestamp: number,
   selectedWeekdays: number[]
 ): Date[] => {
+  debugLog('Génération des dates de planification', {
+    startTimestamp,
+    endTimestamp,
+    selectedWeekdays
+  });
+
   const scheduleDates: Date[] = [];
   const startDate = new Date(startTimestamp);
   const endDate = new Date(endTimestamp);
 
+  debugLog('Plage de dates', {
+    startDate: startDate.toISOString(),
+    endDate: endDate.toISOString()
+  });
+
   let currentDate = startDate;
   while (currentDate <= endDate) {
-    // Convertir la date courante dans le fuseau horaire de Paris
     const zonedCurrentDate = toZonedTime(currentDate, TIMEZONE);
     const localDay = zonedCurrentDate.getDay();
 
-    // Vérifier si le jour est sélectionné
+    debugLog('Analyse de la date', {
+      currentDate: currentDate.toISOString(),
+      zonedDate: zonedCurrentDate.toISOString(),
+      localDay,
+      isSelectedDay: selectedWeekdays.includes(localDay)
+    });
+
     if (selectedWeekdays.includes(localDay)) {
-      // Créer une date à midi pour éviter les problèmes de décalage
       const scheduledDate = new Date(
         zonedCurrentDate.getFullYear(), 
         zonedCurrentDate.getMonth(), 
@@ -63,11 +87,10 @@ const generateScheduleDates = (
       scheduleDates.push(scheduledDate);
     }
 
-    // Ajouter un jour - utiliser addDays pour gérer correctement les changements de mois
     currentDate = addDays(currentDate, 1);
   }
 
-  console.log('Dates planifiées:', scheduleDates.map(d => ({
+  debugLog('Dates planifiées', scheduleDates.map(d => ({
     local: formatInTimeZone(d, TIMEZONE, 'yyyy-MM-dd HH:mm:ss zzz'),
     day: formatInTimeZone(d, TIMEZONE, 'EEEE'),
     timestamp: d.getTime()
@@ -81,13 +104,33 @@ const createScheduledProjects = (
   projectId: string,
   section: 'morning' | 'afternoon'
 ) => {
-  return scheduleDates.map((date) => ({
-    project_id: projectId,
-    schedule_date: formatInTimeZone(date, TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"),
+  debugLog('Création des projets planifiés', {
+    nombreDeDates: scheduleDates.length,
     section,
-    user_id: DEFAULT_USER_ID,
-    completed: false
-  }));
+    projectId
+  });
+
+  const scheduledProjects = scheduleDates.map((date) => {
+    const scheduledProject = {
+      project_id: projectId,
+      schedule_date: formatInTimeZone(date, TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"),
+      section,
+      user_id: DEFAULT_USER_ID,
+      completed: false
+    };
+
+    debugLog('Projet planifié', {
+      date: scheduledProject.schedule_date,
+      jour: formatInTimeZone(date, TIMEZONE, 'EEEE'),
+      timestamp: date.getTime()
+    });
+
+    return scheduledProject;
+  });
+
+  debugLog('Projets planifiés finaux', scheduledProjects);
+
+  return scheduledProjects;
 };
 
 export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
