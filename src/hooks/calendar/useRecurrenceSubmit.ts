@@ -3,7 +3,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Project } from "@/types/calendar";
 import { RecurrenceFormValues } from "@/components/projects/recurrence/types";
-import { toZonedTime, zonedTimeToUtc, utcToZonedTime, formatInTimeZone } from 'date-fns-tz';
+import { zonedTimeToUtc, utcToZonedTime, formatInTimeZone } from 'date-fns-tz';
 import { addDays } from 'date-fns';
 
 const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000000";
@@ -20,9 +20,8 @@ const getDurationDays = (duration: "1week" | "2weeks" | "1month" | "3months"): n
 };
 
 const createDateRange = (startDate: Date, durationDays: number) => {
-  // Convertir la date de début à midi dans le fuseau horaire de Paris
-  const startOfDayInParis = toZonedTime(startDate, TIMEZONE);
-
+  // Convertir en heure locale à midi dans le fuseau horaire de Paris
+  const startOfDayInParis = utcToZonedTime(startDate, TIMEZONE);
   const startDateAtNoon = new Date(
     startOfDayInParis.getFullYear(),
     startOfDayInParis.getMonth(),
@@ -30,9 +29,9 @@ const createDateRange = (startDate: Date, durationDays: number) => {
     12, 0, 0, 0
   );
 
-  // Convertir en UTC pour obtenir des timestamps corrects
+  // Convertir la date locale à midi en UTC pour garantir la cohérence
   const startTimestamp = zonedTimeToUtc(startDateAtNoon, TIMEZONE).getTime();
-  const endTimestamp = startTimestamp + (durationDays * 24 * 60 * 60 * 1000);
+  const endTimestamp = startTimestamp + durationDays * 24 * 60 * 60 * 1000;
 
   return { startTimestamp, endTimestamp };
 };
@@ -45,25 +44,28 @@ const generateScheduleDates = (
   const scheduleDates: Date[] = [];
   let currentTimestamp = startTimestamp;
 
-  while (currentTimestamp <= endTimestamp) {
+  while (currentTimestamp < endTimestamp) {
     // Convertir le timestamp actuel en date locale (Europe/Paris)
     const currentDate = utcToZonedTime(new Date(currentTimestamp), TIMEZONE);
     const localDay = currentDate.getDay();
 
-    // Vérifier si le jour est sélectionné
+    // Vérifier si le jour de la semaine correspond
     if (selectedWeekdays.includes(localDay)) {
-      // Créer une date dans le fuseau horaire local à midi
-      const scheduledDate = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth(),
-        currentDate.getDate(),
-        12, 0, 0, 0
+      // Créer une date UTC correcte alignée à midi
+      const scheduledDate = zonedTimeToUtc(
+        new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          currentDate.getDate(),
+          12, 0, 0, 0
+        ),
+        TIMEZONE
       );
       scheduleDates.push(scheduledDate);
     }
 
-    // Ajouter 1 jour au timestamp
-    currentTimestamp = addDays(currentTimestamp, 1).getTime();
+    // Ajouter 1 jour en UTC
+    currentTimestamp += 24 * 60 * 60 * 1000;
   }
 
   console.log('Dates planifiées:', scheduleDates.map(d => ({
