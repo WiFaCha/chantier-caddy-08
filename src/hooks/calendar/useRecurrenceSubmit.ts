@@ -45,13 +45,13 @@ const generateScheduleDates = (
   let currentTimestamp = startTimestamp;
 
   while (currentTimestamp < endTimestamp) {
-    // Convertir le timestamp actuel en date locale (Europe/Paris)
+    // Convertir en date locale (Europe/Paris)
     const currentDate = utcToZonedTime(new Date(currentTimestamp), TIMEZONE);
     const localDay = currentDate.getDay();
 
-    // Vérifier si le jour de la semaine correspond
+    // Vérifier si le jour local correspond aux jours sélectionnés
     if (selectedWeekdays.includes(localDay)) {
-      // Créer une date UTC correcte alignée à midi
+      // Assurer une date UTC correcte alignée à midi local
       const scheduledDate = zonedTimeToUtc(
         new Date(
           currentDate.getFullYear(),
@@ -64,7 +64,7 @@ const generateScheduleDates = (
       scheduleDates.push(scheduledDate);
     }
 
-    // Ajouter 1 jour en UTC
+    // Ajouter 1 jour (UTC)
     currentTimestamp += 24 * 60 * 60 * 1000;
   }
 
