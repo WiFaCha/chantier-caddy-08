@@ -1,5 +1,8 @@
 import { useTheme } from "next-themes"
-import { Toaster as Sonner } from "sonner"
+import { Toaster as Sonner, toast } from "sonner"
+
+// Configure global toast duration
+toast.duration(2000)
 
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
@@ -20,7 +23,6 @@ const Toaster = ({ ...props }: ToasterProps) => {
           cancelButton:
             "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
         },
-        duration: 1000,
       }}
       {...props}
     />
