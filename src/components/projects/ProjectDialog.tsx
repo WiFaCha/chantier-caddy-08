@@ -17,6 +17,7 @@ const formSchema = z.object({
   color: z.enum(["violet", "blue", "green", "red"]),
   type: z.enum(["Mensuel", "Ponctuel"]),
   window_cleaning: z.array(z.string()).default([]),
+  monthly_once: z.boolean().optional().default(false)
 });
 
 type ProjectFormValues = z.infer<typeof formSchema>;
@@ -45,6 +46,7 @@ export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }
       color: project?.color || "violet",
       type: project?.type || "Mensuel",
       window_cleaning: project?.window_cleaning || [],
+      monthly_once: project?.monthly_once || false
     },
   });
 
@@ -167,6 +169,18 @@ export function ProjectDialog({ project, onSubmit, trigger, open, onOpenChange }
                       </ToggleGroupItem>
                     ))}
                   </ToggleGroup>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="monthly_once"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Une fois par mois</FormLabel>
+                  <FormControl>
+                    <Input type="checkbox" {...field} />
+                  </FormControl>
                 </FormItem>
               )}
             />
