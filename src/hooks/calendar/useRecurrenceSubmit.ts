@@ -4,13 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Project } from "@/types/calendar";
 import { RecurrenceFormValues } from "@/components/projects/recurrence/types";
 import { formatInTimeZone, utcToZonedTime, zonedTimeToUtc } from "date-fns-tz";
+import { addDays } from "date-fns";
 
 const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000000";
 const TIMEZONE = "Europe/Paris";
 
-const getDurationDays = (
-  duration: "1week" | "2weeks" | "1month" | "3months"
-): number => {
+// Étape 1 : Calculer la durée
+const getDurationDays = (duration: "1week" | "2weeks" | "1month" | "3months"): number => {
   const durationMap = {
     "1week": 7,
     "2weeks": 14,
@@ -20,31 +20,20 @@ const getDurationDays = (
   return durationMap[duration] || 7;
 };
 
-import { toZonedTime, zonedTimeToUtc } from 'date-fns-tz';
-
+// Étape 2 : Créer une plage de dates
 const createDateRange = (startDate: Date, durationDays: number) => {
-  // Assurez-vous que startDate est interprété dans le fuseau horaire local
-  const startOfDayInParis = toZonedTime(startDate, TIMEZONE);
-
-  // Force l'heure de début à 12:00 dans le fuseau horaire local
-  const startDateAtNoon = new Date(
-    startOfDayInParis.getFullYear(),
-    startOfDayInParis.getMonth(),
-    startOfDayInParis.getDate(),
-    12, 0, 0, 0
+  const startDateAtNoon = zonedTimeToUtc(
+    new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), 12, 0, 0),
+    TIMEZONE
   );
 
-  // Convertit la date locale en UTC pour éviter les décalages
-  const startTimestamp = zonedTimeToUtc(startDateAtNoon, TIMEZONE).getTime();
-
+  const startTimestamp = startDateAtNoon.getTime();
   const endTimestamp = startTimestamp + durationDays * 24 * 60 * 60 * 1000;
 
   return { startTimestamp, endTimestamp };
 };
 
-import { addDays } from 'date-fns';
-import { utcToZonedTime } from 'date-fns-tz';
-
+// Étape 3 : Générer les dates
 const generateScheduleDates = (
   startTimestamp: number,
   endTimestamp: number,
@@ -53,24 +42,33 @@ const generateScheduleDates = (
   const scheduleDates: Date[] = [];
   let currentTimestamp = startTimestamp;
 
-  while (currentTimestamp < endTimestamp) {
-    // Convertit le timestamp en date locale (Europe/Paris)
+  while (currentTimestamp <= endTimestamp) {
     const currentDate = utcToZonedTime(new Date(currentTimestamp), TIMEZONE);
-
-    const localDay = currentDate.getDay(); // Jour local
+    const localDay = currentDate.getDay();
 
     if (selectedWeekdays.includes(localDay)) {
-      scheduleDates.push(new Date(currentTimestamp)); // Ajout de la date exacte
+      scheduleDates.push(
+        zonedTimeToUtc(
+          new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            currentDate.getDate(),
+            12,
+            0,
+            0
+          ),
+          TIMEZONE
+        )
+      );
     }
 
-    // Ajoute 1 jour en UTC
-    currentTimestamp += 24 * 60 * 60 * 1000;
+    currentTimestamp += 24 * 60 * 60 * 1000; // Ajout d'un jour
   }
 
   return scheduleDates;
 };
 
-
+// Étape 4 : Créer les tâches planifiées
 const createScheduledProjects = (
   scheduleDates: Date[],
   projectId: string,
@@ -85,15 +83,23 @@ const createScheduledProjects = (
   }));
 };
 
+// Étape 5 : Hook principal
 export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   const handleSubmit = async (values: RecurrenceFormValues) => {
     try {
+      console.log("Étape 1 : Soumission avec les valeurs", values);
+
       const now = new Date();
       const durationDays = getDurationDays(values.duration);
       const { startTimestamp, endTimestamp } = createDateRange(now, durationDays);
+
+      console.log("Étape 2 : Plage de dates générée", {
+        startTimestamp,
+        endTimestamp,
+      });
 
       const scheduleDates = generateScheduleDates(
         startTimestamp,
@@ -101,11 +107,15 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
         values.weekdays
       );
 
+      console.log("Étape 3 : Dates générées", scheduleDates);
+
       const scheduledProjects = createScheduledProjects(
         scheduleDates,
         project.id,
         values.section
       );
+
+      console.log("Étape 4 : Tâches planifiées", scheduledProjects);
 
       const { error } = await supabase
         .from("scheduled_projects")
@@ -120,6 +130,7 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
       });
       onSuccess();
     } catch (error: any) {
+      console.error("Erreur dans handleSubmit", error);
       toast({
         title: "Erreur",
         description: error.message,
