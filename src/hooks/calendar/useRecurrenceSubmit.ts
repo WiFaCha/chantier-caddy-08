@@ -61,8 +61,6 @@ const generateScheduleDates = (
         )
       );
     }
-
-    currentTimestamp += 24 * 60 * 60 * 1000; // Ajout d'un jour
   }
 
   return scheduleDates;
