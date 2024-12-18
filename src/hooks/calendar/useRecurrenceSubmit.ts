@@ -28,13 +28,11 @@ const getDurationDays = (duration: "1week" | "2weeks" | "1month" | "3months"): n
 };
 
 const createDateRange = (startDate: Date, durationDays: number) => {
-  // Convertir la date de début à midi dans le fuseau horaire de Paris
-  const startOfDayInParis = toZonedTime(startDate, TIMEZONE);
-  
+  // Créer une date à midi pour éviter les problèmes de décalage
   const startDateAtNoon = new Date(
-    startOfDayInParis.getFullYear(),
-    startOfDayInParis.getMonth(),
-    startOfDayInParis.getDate(),
+    startDate.getFullYear(),
+    startDate.getMonth(),
+    startDate.getDate(),
     12, 0, 0, 0
   );
 
@@ -56,11 +54,10 @@ const generateScheduleDates = (
   let currentDate = new Date(startDate);
   
   while (currentDate <= endDate) {
-    // Utiliser getUTC methods pour éviter les problèmes de décalage
     const localDay = currentDate.getDay();
 
     if (selectedWeekdays.includes(localDay)) {
-      // Créer une nouvelle date à midi pour éviter les problèmes de fuseau horaire
+      // Créer une nouvelle date à midi EXACTEMENT au bon jour
       const scheduledDate = new Date(
         currentDate.getFullYear(), 
         currentDate.getMonth(), 
@@ -68,17 +65,25 @@ const generateScheduleDates = (
         12, 0, 0
       );
       
+      // Forcer le jour de la semaine
+      scheduledDate.setDate(
+        currentDate.getDate() + 
+        ((selectedWeekdays.indexOf(localDay) + 7 - localDay) % 7)
+      );
+      
       scheduleDates.push(scheduledDate);
     }
 
-    // Ajouter exactement 24 heures
+    // Ajouter un jour
     currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
   }
 
   console.log('Dates générées:', scheduleDates.map(d => ({
     date: d.toISOString(),
+    localDate: d.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
     jour: d.toLocaleDateString('fr-FR', { weekday: 'long' }),
-    jour_numero: d.getDay()
+    day: d.getDay(),
+    timestamp: d.getTime()
   })));
 
   return scheduleDates;
@@ -128,11 +133,30 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
       const durationDays = getDurationDays(values.duration);
       const { startTimestamp, endTimestamp } = createDateRange(now, durationDays);
       
+      console.group('🔍 Récurrence Debugging');
+      console.log('Paramètres initiaux:', {
+        now: now.toISOString(),
+        nowDay: now.getDay(),
+        durationDays,
+        startTimestamp: new Date(startTimestamp).toISOString(),
+        endTimestamp: new Date(endTimestamp).toISOString(),
+        selectedWeekdays: values.weekdays
+      });
+      
       const scheduleDates = generateScheduleDates(
         startTimestamp,
         endTimestamp,
         values.weekdays
       );
+
+      console.log('Dates générées:', scheduleDates.map(d => ({
+        date: d.toISOString(),
+        localDate: d.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+        jour: d.toLocaleDateString('fr-FR', { weekday: 'long' }),
+        day: d.getDay(),
+        timestamp: d.getTime()
+      })));
+      console.groupEnd();
 
       const scheduledProjects = createScheduledProjects(
         scheduleDates,
