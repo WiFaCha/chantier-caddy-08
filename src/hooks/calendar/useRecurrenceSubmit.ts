@@ -18,23 +18,31 @@ const getDurationDays = (duration: "1week" | "2weeks" | "1month" | "3months"): n
   return durationMap[duration] || 7;
 };
 
+import { toZonedTime, zonedTimeToUtc } from 'date-fns-tz';
+
 const createDateRange = (startDate: Date, durationDays: number) => {
-  // Conversion en temps local Paris
-  const zonedDate = toZonedTime(startDate, TIMEZONE);
-  
-  const startTimestamp = new Date(
-    zonedDate.getFullYear(),
-    zonedDate.getMonth(),
-    zonedDate.getDate(),
+  // Assurez-vous que startDate est interprété dans le fuseau horaire local
+  const startOfDayInParis = toZonedTime(startDate, TIMEZONE);
+
+  // Force l'heure de début à 12:00 dans le fuseau horaire local
+  const startDateAtNoon = new Date(
+    startOfDayInParis.getFullYear(),
+    startOfDayInParis.getMonth(),
+    startOfDayInParis.getDate(),
     12, 0, 0, 0
-  ).getTime();
-  
-  const endTimestamp = startTimestamp + (durationDays * 24 * 60 * 60 * 1000);
-  
+  );
+
+  // Convertit la date locale en UTC pour éviter les décalages
+  const startTimestamp = zonedTimeToUtc(startDateAtNoon, TIMEZONE).getTime();
+
+  const endTimestamp = startTimestamp + durationDays * 24 * 60 * 60 * 1000;
+
   return { startTimestamp, endTimestamp };
 };
 
+
 import { addDays } from 'date-fns';
+import { utcToZonedTime } from 'date-fns-tz';
 
 const generateScheduleDates = (
   startTimestamp: number,
@@ -42,17 +50,20 @@ const generateScheduleDates = (
   selectedWeekdays: number[]
 ): Date[] => {
   const scheduleDates: Date[] = [];
-  let currentDate = toZonedTime(new Date(startTimestamp), TIMEZONE);
+  let currentTimestamp = startTimestamp;
 
-  while (currentDate.getTime() < endTimestamp) {
-    const localDay = currentDate.getDay();
+  while (currentTimestamp < endTimestamp) {
+    // Convertit le timestamp en date locale (Europe/Paris)
+    const currentDate = utcToZonedTime(new Date(currentTimestamp), TIMEZONE);
+
+    const localDay = currentDate.getDay(); // Jour local
 
     if (selectedWeekdays.includes(localDay)) {
-      scheduleDates.push(new Date(currentDate));
+      scheduleDates.push(new Date(currentTimestamp)); // Ajout de la date exacte
     }
 
-    // Ajoute 1 jour correctement en tenant compte du fuseau horaire
-    currentDate = addDays(currentDate, 1);
+    // Ajoute 1 jour en UTC
+    currentTimestamp += 24 * 60 * 60 * 1000;
   }
 
   return scheduleDates;
