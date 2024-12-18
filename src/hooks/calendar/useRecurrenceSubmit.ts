@@ -107,13 +107,33 @@ const createScheduledProjects = (
   projectId: string,
   section: 'morning' | 'afternoon'
 ) => {
+  // Forcer le bon jour pour chaque date
+  const correctedDates = scheduleDates.map(originalDate => {
+    // Créer une nouvelle date à midi en forçant le jour correct
+    const correctedDate = new Date(
+      originalDate.getFullYear(), 
+      originalDate.getMonth(), 
+      originalDate.getDate(), 
+      12, 0, 0
+    );
+
+    console.log('Correction de date', {
+      originalDate: originalDate.toISOString(),
+      originalDay: originalDate.getDay(),
+      correctedDate: correctedDate.toISOString(),
+      correctedDay: correctedDate.getDay()
+    });
+
+    return correctedDate;
+  });
+
   debugLog('Création des projets planifiés', {
-    nombreDeDates: scheduleDates.length,
+    nombreDeDates: correctedDates.length,
     section,
     projectId
   });
 
-  const scheduledProjects = scheduleDates.map((date) => {
+  const scheduledProjects = correctedDates.map((date) => {
     const scheduledProject = {
       project_id: projectId,
       schedule_date: formatInTimeZone(date, TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"),
