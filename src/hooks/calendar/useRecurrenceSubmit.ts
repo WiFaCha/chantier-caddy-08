@@ -50,28 +50,20 @@ const generateScheduleDates = (
   const scheduleDates: Date[] = [];
   let currentDate = new Date(startDate);
 
-  // Log initial détaillé
-  advancedDebugLog('Paramètres initiaux generateScheduleDates', {
-    startDate,
-    endDate,
-    selectedWeekdays,
-    startDateDay: startDate.getDay(),
-    endDateDay: endDate.getDay()
-  });
+  console.log('🔍 DEBUG - Paramètres initiaux');
+  console.log('Date de début:', startDate.toISOString());
+  console.log('Date de fin:', endDate.toISOString());
+  console.log('Jours sélectionnés:', selectedWeekdays);
+  console.log('Jour de la date de début:', startDate.getDay());
 
   while (currentDate <= endDate) {
     const currentDay = currentDate.getDay();
-    const currentHour = currentDate.getHours();
 
-    // Log pour chaque itération
-    advancedDebugLog('Vérification date', {
-      currentDate: currentDate.toISOString(),
-      currentDay,
-      isSelectedDay: selectedWeekdays.includes(currentDay)
-    });
+    console.log('Date courante:', currentDate.toISOString());
+    console.log('Jour courant:', currentDay);
+    console.log('Est-ce un jour sélectionné ?', selectedWeekdays.includes(currentDay));
 
     if (selectedWeekdays.includes(currentDay)) {
-      // Créer une nouvelle date à midi 
       const scheduledDate = new Date(
         currentDate.getFullYear(), 
         currentDate.getMonth(), 
@@ -79,20 +71,16 @@ const generateScheduleDates = (
         12, 0, 0
       );
 
+      console.log('Date programmée ajoutée:', scheduledDate.toISOString());
       scheduleDates.push(scheduledDate);
     }
 
-    // Ajouter un jour en utilisant setDate pour gérer correctement les transitions
     currentDate.setDate(currentDate.getDate() + 1);
   }
 
-  // Log des dates finales
-  advancedDebugLog('Dates générées', {
-    scheduleDates: scheduleDates.map(d => ({
-      date: d.toISOString(),
-      jour: d.toLocaleString('fr-FR', { weekday: 'long' }),
-      jourNumero: d.getDay()
-    }))
+  console.log('🔍 Dates finales générées:');
+  scheduleDates.forEach(date => {
+    console.log(date.toISOString(), 'Jour:', date.getDay());
   });
 
   return scheduleDates;
