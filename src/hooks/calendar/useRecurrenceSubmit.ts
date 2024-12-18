@@ -47,11 +47,24 @@ const generateScheduleDates = (
     const localDay = currentDate.getDay();
 
     if (selectedWeekdays.includes(localDay)) {
-      scheduleDates.push(new Date(currentTimestamp));
+      // Créer une date à midi pour éviter les problèmes de décalage
+      const scheduledDate = new Date(
+        currentDate.getFullYear(), 
+        currentDate.getMonth(), 
+        currentDate.getDate(), 
+        12, 0, 0
+      );
+      scheduleDates.push(scheduledDate);
     }
 
+    // Ajouter un jour
     currentTimestamp += 24 * 60 * 60 * 1000;
   }
+
+  console.log('Dates planifiées:', scheduleDates.map(d => ({
+    local: formatInTimeZone(d, TIMEZONE, 'yyyy-MM-dd HH:mm:ss zzz'),
+    day: formatInTimeZone(d, TIMEZONE, 'EEEE'),
+  })));
 
   return scheduleDates;
 };
@@ -85,11 +98,6 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
         endTimestamp,
         values.weekdays
       );
-
-      console.log('Dates planifiées:', scheduleDates.map(d => ({
-        local: formatInTimeZone(d, TIMEZONE, 'yyyy-MM-dd HH:mm:ss zzz'),
-        day: formatInTimeZone(d, TIMEZONE, 'EEEE'),
-      })));
 
       const scheduledProjects = createScheduledProjects(
         scheduleDates,
