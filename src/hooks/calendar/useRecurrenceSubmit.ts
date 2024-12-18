@@ -3,7 +3,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Project } from "@/types/calendar";
 import { RecurrenceFormValues } from "@/components/projects/recurrence/types";
-import { toZonedTime, formatInTimeZone, addDays } from 'date-fns-tz';
+import { toZonedTime, formatInTimeZone } from 'date-fns-tz';
+import { addDays } from 'date-fns';
 
 const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000000";
 const TIMEZONE = 'Europe/Paris';
@@ -225,3 +226,4 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
 
   return handleSubmit;
 }
+
