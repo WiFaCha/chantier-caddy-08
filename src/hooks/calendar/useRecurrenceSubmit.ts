@@ -51,26 +51,35 @@ const generateScheduleDates = (
   const startDate = new Date(startTimestamp);
   const endDate = new Date(endTimestamp);
 
+  console.group('🔍 Génération des dates');
+  console.log('Paramètres initiaux:', {
+    startDate: startDate.toISOString(),
+    endDate: endDate.toISOString(),
+    selectedWeekdays
+  });
+
   let currentDate = new Date(startDate);
   
   while (currentDate <= endDate) {
-    const localDay = currentDate.getDay();
+    const currentDay = currentDate.getDay();
 
-    if (selectedWeekdays.includes(localDay)) {
-      // Créer une nouvelle date à midi EXACTEMENT au bon jour
-      const scheduledDate = new Date(
+    // Vérifier si le jour actuel est dans les jours sélectionnés
+    if (selectedWeekdays.includes(currentDay)) {
+      // Créer une nouvelle date à midi, en forçant le jour correct
+      const scheduledDate = new Date(Date.UTC(
         currentDate.getFullYear(), 
         currentDate.getMonth(), 
         currentDate.getDate(), 
         12, 0, 0
-      );
-      
-      // Forcer le jour de la semaine
-      scheduledDate.setDate(
-        currentDate.getDate() + 
-        ((selectedWeekdays.indexOf(localDay) + 7 - localDay) % 7)
-      );
-      
+      ));
+
+      console.log('Date générée:', {
+        originalDate: currentDate.toISOString(),
+        scheduledDate: scheduledDate.toISOString(),
+        currentDay,
+        isSelectedDay: selectedWeekdays.includes(currentDay)
+      });
+
       scheduleDates.push(scheduledDate);
     }
 
@@ -78,13 +87,17 @@ const generateScheduleDates = (
     currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
   }
 
-  console.log('Dates générées:', scheduleDates.map(d => ({
+  console.log('Dates finales:', scheduleDates.map(d => ({
     date: d.toISOString(),
-    localDate: d.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
-    jour: d.toLocaleDateString('fr-FR', { weekday: 'long' }),
-    day: d.getDay(),
-    timestamp: d.getTime()
+    localDate: d.toLocaleDateString('fr-FR', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    }),
+    day: d.getDay()
   })));
+  console.groupEnd();
 
   return scheduleDates;
 };
@@ -151,7 +164,12 @@ export function useRecurrenceSubmit(project: Project, onSuccess: () => void) {
 
       console.log('Dates générées:', scheduleDates.map(d => ({
         date: d.toISOString(),
-        localDate: d.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+        localDate: d.toLocaleDateString('fr-FR', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        }),
         jour: d.toLocaleDateString('fr-FR', { weekday: 'long' }),
         day: d.getDay(),
         timestamp: d.getTime()
